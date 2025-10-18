@@ -1,0 +1,731 @@
+// Fitness App Database Schema
+// PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// PostgreSQL enum'ları
+enum UserRole {
+  ADMIN
+  TRAINER
+  CLIENT
+}
+
+enum FormStatus {
+  pending
+  reviewed
+  approved
+}
+
+enum WorkoutLocation {
+  home
+  gym
+}
+
+enum EquipmentAvailability {
+  withEquipment
+  withoutEquipment
+}
+
+enum ExperienceLevel {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum Gender {
+  Erkek
+  Kadin
+  Diger
+}
+
+enum ActivityLevel {
+  Dusuk
+  Orta
+  Yuksek
+}
+
+enum FitnessGoal {
+  KiloVerme
+  KiloAlma
+  KasKazanma
+  GenelSaglik
+}
+
+enum QuestionCategory {
+  Antrenman
+  Beslenme
+  Supplement
+  Genel
+}
+
+enum QuestionPriority {
+  Dusuk
+  Orta
+  Yuksek
+}
+
+enum QuestionStatus {
+  Yeni
+  Beklemede
+  Cevaplanmis
+  Arsivlendi
+}
+
+enum OrderStatus {
+  Aktif
+  Tamamlandi
+  Beklemede
+  Iptal
+}
+
+enum PaymentStatus {
+  Odendi
+  Bekliyor
+  IadeEdildi
+}
+
+enum PackageStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+  AUDIT
+}
+
+model MailSetting {
+  id         String   @id @default(cuid())
+  host       String
+  port       Int
+  secure     Boolean  @default(false)
+  username   String?
+  password   String?
+  fromName   String
+  fromEmail  String
+  replyTo    String?
+  isActive   Boolean  @default(true)
+  lastTested DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("mail_settings")
+}
+
+enum PaytrMode {
+  TEST
+  LIVE
+}
+
+model PaytrSetting {
+  id                 String    @id @default(cuid())
+  mode               PaytrMode @default(TEST)
+  merchantId         String
+  merchantKey        String
+  merchantSalt       String
+  iframeKey          String?
+  merchantOkUrl      String?
+  merchantFailUrl    String?
+  merchantWebhookUrl String?
+  currency           String    @default("TL")
+  language           String    @default("tr")
+  iframeDebug        Boolean   @default(false)
+  non3d              Boolean   @default(false)
+  maxInstallment     Int       @default(0)
+  paymentMethods     Json?
+  installmentConfig  Json?
+  extraConfig        Json?
+  lastSyncedAt       DateTime?
+  updatedById        String?
+  updatedByEmail     String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  logs PaytrLog[]
+
+  @@map("paytr_settings")
+}
+
+model PaytrLog {
+  id        String   @id @default(cuid())
+  action    String
+  status    String?
+  message   String?
+  payload   Json?
+  error     Json?
+  ipAddress String?
+  userId    String?
+  userEmail String?
+  createdAt DateTime @default(now())
+  settingId String?
+
+  setting PaytrSetting? @relation(fields: [settingId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("paytr_logs")
+}
+
+model ManualPaymentAccount {
+  id           String   @id @default(cuid())
+  bankName     String
+  accountName  String
+  iban         String
+  accountNumber String?
+  branchName   String?
+  description  String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("manual_payment_accounts")
+}
+
+model SupportQuickReply {
+  id        String   @id @default(cuid())
+  trainerId String
+  trainer   User     @relation("SupportQuickReplyTrainer", fields: [trainerId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trainerId])
+  @@map("support_quick_replies")
+}
+
+model TrainerOrder {
+  id            String         @id @default(cuid())
+  trainerId     String
+  trainer       User           @relation("TrainerOrderTrainer", fields: [trainerId], references: [id], onDelete: Cascade)
+  clientName    String
+  clientEmail   String?
+  clientAvatar  String?
+  packageName   String
+  packageType   String?
+  amount        Int
+  status        OrderStatus
+  paymentStatus PaymentStatus
+  orderDate     DateTime
+  startDate     DateTime?
+  endDate       DateTime?
+  services      Json?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@map("trainer_orders")
+}
+
+model FitnessPackage {
+  id             String             @id @default(cuid())
+  slug           String             @unique
+  name           String
+  headline       String?
+  description    String?
+  price          Int
+  originalPrice  Int?
+  currency       String             @default("TRY")
+  durationInDays Int
+  isPopular      Boolean            @default(false)
+  isActive       Boolean            @default(true)
+  themeColor     String?            // Tailwind class veya hex
+  iconName       String?            // Frontend ikon eşlemesi için
+  features       String[]
+  notIncluded    String[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  purchases PackagePurchase[]
+
+  @@map("fitness_packages")
+}
+
+model PackagePurchase {
+  id               String         @id @default(cuid())
+  userId           String
+  packageId        String
+  status           PackageStatus  @default(ACTIVE)
+  paymentReference String?
+  purchasedAt      DateTime       @default(now())
+  startsAt         DateTime       @default(now())
+  expiresAt        DateTime
+  cancelledAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package FitnessPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([packageId])
+  @@index([expiresAt])
+  @@map("package_purchases")
+}
+
+model AdminLog {
+  id         String    @id @default(cuid())
+  level      LogLevel  @default(INFO)
+  message    String
+  context    Json?
+  actorId    String?
+  actorEmail String?
+  source     String?   @default("system")
+  createdAt  DateTime  @default(now())
+
+  actor User? @relation("AdminLogActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([level])
+  @@map("admin_logs")
+}
+
+// Ayrık ölçüm tipleri (kilo, boy, göğüs, bel, vb.)
+enum MeasurementType {
+  weight
+  height
+  chest
+  waist
+  hip
+  arm
+  thigh
+  neck
+  shoulder
+}
+
+// Kullanıcılar tablosu
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  role          UserRole @default(CLIENT)
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  emailVerificationToken String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Profil bilgileri
+  profile UserProfile?
+
+  // PT Form ilişkisi
+  ptForms PTForm[]
+
+  // İlişkiler - Eğitmen ise
+  trainedClients TrainerClient[] @relation("TrainerRelation")
+  
+  // İlişkiler - Danışan ise
+  trainerRelations TrainerClient[] @relation("ClientRelation")
+  
+  // Mesajlar
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+
+  // Ayrık ölçümler
+  measurements Measurement[]
+
+  supportQuestions SupportQuestion[] @relation("SupportQuestionClient")
+  managedQuestions SupportQuestion[] @relation("SupportQuestionTrainer")
+  answeredQuestions SupportQuestion[] @relation("SupportQuestionAnsweredBy")
+  quickReplies     SupportQuickReply[] @relation("SupportQuickReplyTrainer")
+  orders           TrainerOrder[] @relation("TrainerOrderTrainer")
+  packagePurchases PackagePurchase[]
+  adminLogs        AdminLog[] @relation("AdminLogActor")
+
+  @@map("users")
+}
+
+// Kullanıcı profil bilgileri
+model UserProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Kişisel bilgiler (zorunlu)
+  firstName String
+  lastName  String
+  phone     String?
+  
+  // Fiziksel özellikler
+  age       Int?
+  height    Float? // cm
+  weight    Float? // kg
+  gender    Gender?
+  
+  // Fitness hedefleri
+  targetWeight Float?
+  activityLevel ActivityLevel?
+  fitnessGoal   FitnessGoal?
+  
+  // İletişim ve adres
+  address   String?
+  
+  // Profil fotoğrafı
+  avatar String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+// Eğitmen-Danışan ilişkisi
+model TrainerClient {
+  id        String   @id @default(cuid())
+  trainerId String
+  clientId  String
+  trainer   User     @relation("TrainerRelation", fields: [trainerId], references: [id], onDelete: Cascade)
+  client    User     @relation("ClientRelation", fields: [clientId], references: [id], onDelete: Cascade)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainerId, clientId])
+  @@map("trainer_clients")
+}
+
+// PT Form modeli
+model PTForm {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  
+  // Fotoğraflar - PostgreSQL JSON tipi
+  bodyPhotos          Json? // Dosya yolları JSON array
+  equipmentPhotos     Json? // Dosya yolları JSON array
+
+  // Sağlık ve Antrenman Bilgileri
+  healthConditions    String?
+  injuries            String?
+  medications         String?
+  workoutLocation     WorkoutLocation
+  equipmentAvailable  EquipmentAvailability?
+  workoutDaysPerWeek  Int
+  experience          ExperienceLevel @default(beginner)
+
+  // Beslenme ve Yaşam Tarzı
+  mealFrequency       Int?
+  dietRestrictions    String?
+  jobDetails          String?
+  trainingExpectations String?
+  sportHistory        String?
+  lastTrainingProgram String?
+
+
+  // Özel İstekler
+  specialRequests     String?
+
+  // Acil durum iletişim bilgileri
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  // Sözleşme Onayı
+  agreedToTerms       Boolean  @default(false)
+
+  // Durum ve Zaman Bilgileri
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SupportQuestion {
+  id           String           @id @default(cuid())
+  trainerId    String?
+  trainer      User?            @relation("SupportQuestionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  clientId     String
+  client       User             @relation("SupportQuestionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  subject      String
+  category     QuestionCategory
+  priority     QuestionPriority @default(Orta)
+  status       QuestionStatus   @default(Yeni)
+  question     String
+  answer       String?
+  attachments  Json?
+  answeredAt   DateTime?
+  answeredById String?
+  answeredBy   User?            @relation("SupportQuestionAnsweredBy", fields: [answeredById], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([trainerId])
+  @@index([clientId])
+  @@map("support_questions")
+}
+
+// Antrenman programları
+model WorkoutProgram {
+  id        String @id @default(cuid())
+  trainerId String
+  clientId  String
+  
+  // Program bilgileri
+  title       String
+  description String?
+  duration    Int? // hafta cinsinden
+  
+  // Program verileri - PostgreSQL JSON tipi
+  programData Json // Program detayları JSON
+  
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // İlerleme kayıtları
+  progress WorkoutProgress[]
+
+  @@map("workout_programs")
+}
+
+model ExerciseTemplate {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  category      String?
+  equipment     String?
+  difficulty    String?
+  instructions  String?
+  videoUrl      String?
+  targetMuscles String[]
+  tips          String?
+  safetyNotes   String?
+  variations    String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  templateExercises TemplateExercise[]
+}
+
+model SupplementTemplate {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  category      String?
+  brand         String?
+  description   String?
+  defaultDosage String?
+  defaultTiming String?
+  timingOptions String[]
+  benefits      String[]
+  price         Float?
+  stock         Int?
+  warnings      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model WorkoutTemplate {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  description  String?
+  duration     Int?
+  difficulty   String?
+  muscleGroups String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  days      WorkoutTemplateDay[]
+}
+
+model WorkoutTemplateDay {
+  id                String           @id @default(cuid())
+  workoutTemplateId String
+  workoutTemplate   WorkoutTemplate  @relation(fields: [workoutTemplateId], references: [id], onDelete: Cascade)
+  order             Int
+  label             String
+  videoUrl          String?
+  notes             String?
+
+  exercises TemplateExercise[]
+}
+
+model TemplateExercise {
+  id                   String           @id @default(cuid())
+  workoutTemplateDayId String
+  exerciseTemplateId   String
+  order                Int
+  sets                 Int?
+  reps                 String?
+  rest                 Int?
+  weight               String?
+  notes                String?
+
+  day    WorkoutTemplateDay @relation(fields: [workoutTemplateDayId], references: [id], onDelete: Cascade)
+  exerciseTemplate ExerciseTemplate @relation(fields: [exerciseTemplateId], references: [id], onDelete: Cascade)
+
+  @@index([workoutTemplateDayId])
+  @@index([exerciseTemplateId])
+}
+
+// Antrenman ilerlemesi
+model WorkoutProgress {
+  id        String @id @default(cuid())
+  programId String
+  program   WorkoutProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  
+  // Hangi gün ve set
+  day       Int
+  exerciseIndex Int
+  setIndex  Int
+  
+  // Tamamlandı mı?
+  completed Boolean @default(false)
+  
+  // Notlar (ağırlık, tekrar sayısı vs.)
+  notes String?
+  
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("workout_progress")
+}
+
+// Beslenme programları
+model NutritionProgram {
+  id        String @id @default(cuid())
+  trainerId String
+  clientId  String
+  
+  // Program bilgileri
+  title       String
+  description String?
+  
+  // Program verileri - PostgreSQL JSON tipi
+  programData Json // Beslenme program detayları JSON
+  
+  // Genel notlar
+  generalNotes String?
+  
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("nutrition_programs")
+}
+
+model DietTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  goal        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  days        DietTemplateDay[]
+}
+
+model DietTemplateDay {
+  id             String       @id @default(cuid())
+  dietTemplateId String
+  dietTemplate   DietTemplate @relation(fields: [dietTemplateId], references: [id], onDelete: Cascade)
+  order          Int
+  title          String
+  notes          String?
+
+  meals          DietTemplateMeal[]
+}
+
+model DietTemplateMeal {
+  id                String         @id @default(cuid())
+  dietTemplateDayId String
+  dietDay           DietTemplateDay @relation(fields: [dietTemplateDayId], references: [id], onDelete: Cascade)
+  order             Int
+  title             String
+
+  items             DietTemplateMealItem[]
+}
+
+model DietTemplateMealItem {
+  id               String           @id @default(cuid())
+  dietTemplateMealId String
+  meal             DietTemplateMeal @relation(fields: [dietTemplateMealId], references: [id], onDelete: Cascade)
+  order            Int
+  content          String
+}
+
+// Supplement programları
+model SupplementProgram {
+  id        String @id @default(cuid())
+  trainerId String
+  clientId  String
+  
+  // Program bilgileri
+  title       String
+  description String?
+  
+  // Supplement verileri - PostgreSQL JSON tipi
+  supplements Json // Supplement listesi JSON array
+  
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Supplement takibi
+  progress SupplementProgress[]
+
+  @@map("supplement_programs")
+}
+
+// Supplement takip
+model SupplementProgress {
+  id        String @id @default(cuid())
+  programId String
+  program   SupplementProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  
+  // Hangi supplement ve tarih
+  supplementId String
+  date         DateTime @default(now())
+  taken        Boolean  @default(false)
+  
+  notes String?
+
+  @@map("supplement_progress")
+}
+
+// Mesajlaşma sistemi
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("messages")
+}
+
+
+// Ayrık ölçümler tablosu
+model Measurement {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ölçüm tipi ve değeri
+  type       MeasurementType
+  value      Float
+  unit       String?         // ör: "kg", "cm"
+
+  // Zaman ve not
+  recordedAt DateTime        @default(now())
+  notes      String?
+
+  @@index([userId, type, recordedAt])
+  @@map("measurements")
+}

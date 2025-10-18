@@ -1,0 +1,296 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode için özel varyant */
+
+.yt-wrapper {
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.yt-frame-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 */
+  left: 0;
+  background: #000;
+}
+
+.yt-frame-container iframe,
+.yt-player-slot,
+.yt-player-slot iframe {
+  position: absolute;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* Kırpma/zoom kaldırıldı; video her zaman tam görünür */
+
+:root {
+  /* Fitness temasına uygun renk paleti güncellendi */
+  --background: 0 0% 100%; /* #ffffff */
+  --foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --card: 0 100% 97.6%; /* #fef2f2 */
+  --card-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --popover: 0 0% 100%; /* #ffffff */
+  --popover-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --primary: 0 72.2% 50.6%; /* #dc2626 - fitness red */
+  --primary-foreground: 0 0% 100%; /* #ffffff */
+  --secondary: 35.5 91.7% 51.4%; /* #f59e0b - accent orange */
+  --secondary-foreground: 0 0% 100%; /* #ffffff */
+  --muted: 0 100% 97.6%; /* #fef2f2 */
+  --muted-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 0 0% 100%; /* #ffffff */
+  --destructive: 0 72.2% 50.6%; /* #dc2626 */
+  --destructive-foreground: 0 0% 100%; /* #ffffff */
+  --border: 220 13% 91%; /* #e5e7eb */
+  --input: 0 0% 100%; /* #ffffff */
+  --ring: 0 72.2% 50.6% / 0.5; /* rgba(220, 38, 38, 0.5) */
+  --chart-1: 0 72.2% 50.6%; /* #dc2626 */
+  --chart-2: 35.5 91.7% 51.4%; /* #f59e0b */
+  --chart-3: 32.1 94.6% 43.7%; /* #d97706 */
+  --chart-4: 215 25% 27%; /* #1f2937 */
+  --chart-5: 18 96% 50%; /* #fa4f05 */
+  --radius: 0.5rem;
+  --sidebar: 0 100% 97.6%; /* #fef2f2 */
+  --sidebar-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --sidebar-primary: 0 72.2% 50.6%; /* #dc2626 */
+  --sidebar-primary-foreground: 0 0% 100%; /* #ffffff */
+  --sidebar-accent: 18 96% 50%; /* #fa4f05 */
+  --sidebar-accent-foreground: 0 0% 100%; /* #ffffff */
+  --sidebar-border: 220 13% 91%; /* #e5e7eb */
+  --sidebar-ring: 0 72.2% 50.6% / 0.5; /* rgba(220, 38, 38, 0.5) */
+}
+
+.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --card: 224 71% 4%;
+  --card-foreground: 213 31% 91%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 0 63% 31%; /* Darker red for dark mode */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 35.5 91.7% 51.4%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --ring: 0 63% 31% / 0.5;
+  --chart-1: 0 63% 31%;
+  --chart-2: 35.5 91.7% 51.4%;
+  --chart-3: 32.1 94.6% 43.7%;
+  --chart-4: 215.4 16.3% 56.9%;
+  --chart-5: 18 96% 50%; /* #fa4f05 */
+  --sidebar: 224 71% 4%;
+  --sidebar-foreground: 213 31% 91%;
+  --sidebar-primary: 0 63% 31%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 18 96% 50%; /* #fa4f05 */
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 216 34% 17%;
+  --sidebar-ring: 0 63% 31% / 0.5;
+}
+
+/* Eğitmen paneli için profesyonel renk paleti eklendi */
+.trainer-theme {
+  --background: 0 0% 100%; /* #ffffff */
+  --foreground: 215 25% 27%; /* #1f2937 */
+  --card: 210 40% 96.1%; /* #f1f5f9 */
+  --card-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --popover: 0 0% 100%; /* #ffffff */
+  --popover-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --primary: 215 25% 27%; /* #1f2937 - professional gray */
+  --primary-foreground: 0 0% 100%; /* #ffffff */
+  --secondary: 18 96% 50%; /* #fa4f05 */
+  --secondary-foreground: 0 0% 100%; /* #ffffff */
+  --muted: 210 40% 96.1%; /* #f1f5f9 */
+  --muted-foreground: 215.4 16.3% 46.9%; /* #6b7280 */
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 0 0% 100%; /* #ffffff */
+  --destructive: 0 72.2% 50.6%; /* #dc2626 */
+  --destructive-foreground: 0 0% 100%; /* #ffffff */
+  --border: 214.3 31.8% 91.4%; /* #e5e7eb */
+  --input: 210 40% 96.1%; /* #f1f5f9 */
+  --ring: 18 96% 50% / 0.5; /* rgba(250, 79, 5, 0.5) */
+  --chart-1: 18 96% 50%; /* #fa4f05 */
+  --chart-2: 215 25% 27%; /* #1f2937 */
+  --chart-3: 215.4 16.3% 46.9%; /* #6b7280 */
+  --chart-4: 0 72.2% 50.6%; /* #dc2626 */
+  --chart-5: 35.5 91.7% 51.4%; /* #f59e0b */
+  --sidebar: 210 40% 96.1%; /* #f1f5f9 */
+  --sidebar-foreground: 222.2 47.4% 11.2%; /* #374151 */
+  --sidebar-primary: 18 96% 50%; /* #fa4f05 */
+  --sidebar-primary-foreground: 0 0% 100%; /* #ffffff */
+  --sidebar-accent: 215 25% 27%; /* #1f2937 */
+  --sidebar-accent-foreground: 0 0% 100%; /* #ffffff */
+  --sidebar-border: 214.3 31.8% 91.4%; /* #e5e7eb */
+  --sidebar-ring: 18 96% 50% / 0.5; /* rgba(250, 79, 5, 0.5) */
+}
+
+.trainer-theme.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --card: 224 71% 4%;
+  --card-foreground: 213 31% 91%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 215.4 16.3% 46.9%; /* Lighter gray for dark mode */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 18 96% 50%; /* #fa4f05 */
+  --secondary-foreground: 210 40% 98%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --ring: 18 96% 50% / 0.5;
+  --sidebar: 224 71% 4%;
+  --sidebar-foreground: 213 31% 91%;
+  --sidebar-primary: 18 96% 50%; /* #fa4f05 */
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 215.4 16.3% 46.9%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 216 34% 17%;
+  --sidebar-ring: 18 96% 50% / 0.5;
+}
+
+/* Admin paneli için profesyonel renk paleti eklendi */
+.admin-theme {
+  --background: 210 40% 96.1%; /* #f1f5f9 - açık gri arka plan */
+  --foreground: 215 25% 27%; /* #1f2937 - koyu gri yazı rengi */
+  --card: 0 0% 100%; /* #ffffff - beyaz kart arka planı */
+  --card-foreground: 215 25% 27%; /* #1f2937 */
+  --popover: 0 0% 100%; /* #ffffff */
+  --popover-foreground: 215 25% 27%; /* #1f2937 */
+  --primary: 215 25% 27%; /* #1f2937 - profesyonel koyu gri */
+  --primary-foreground: 0 0% 100%; /* #ffffff */
+  --secondary: 215.4 16.3% 46.9%; /* #6b7280 - nötr gri */
+  --secondary-foreground: 0 0% 100%; /* #ffffff */
+  --muted: 214.3 31.8% 91.4%; /* #e5e7eb - açık gri */
+  --muted-foreground: 215.4 16.3% 46.9%; /* #6b7280 - orta gri */
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 0 0% 100%; /* #ffffff */
+  --destructive: 0 72.2% 50.6%; /* #dc2626 - kırmızı */
+  --destructive-foreground: 0 0% 100%; /* #ffffff */
+  --border: 214.3 31.8% 91.4%; /* #e5e7eb - açık gri kenarlık */
+  --input: 210 40% 96.1%; /* #f1f5f9 - açık gri input arka planı */
+  --ring: 18 96% 50% / 0.5; /* rgba(250, 79, 5, 0.5) */
+  --sidebar: 0 0% 100%; /* #ffffff - beyaz sidebar */
+  --sidebar-foreground: 215 25% 27%; /* #1f2937 - sidebar yazı rengi */
+  --sidebar-primary: 210 40% 96.1%; /* #f1f5f9 - sidebar vurgu rengi */
+  --sidebar-primary-foreground: 215 25% 27%; /* #1f2937 */
+  --sidebar-accent: 18 96% 50%; /* #fa4f05 */
+  --sidebar-accent-foreground: 0 0% 100%; /* #ffffff */
+  --sidebar-border: 214.3 31.8% 91.4%; /* #e5e7eb - sidebar kenarlık rengi */
+}
+
+.admin-theme.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --card: 224 71% 4%;
+  --card-foreground: 213 31% 91%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 215.4 16.3% 46.9%; /* Lighter gray for dark mode */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 215.4 16.3% 46.9%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --accent: 18 96% 50%; /* #fa4f05 */
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --ring: 18 96% 50% / 0.5;
+  --sidebar: 224 71% 4%;
+  --sidebar-foreground: 213 31% 91%;
+  --sidebar-primary: 223 47% 11%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 18 96% 50%; /* #fa4f05 */
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 216 34% 17%;
+  --sidebar-ring: 18 96% 50% / 0.5;
+}
+
+/* Mobile Light Theme - Override için özel sınıf */
+.mobile-light-theme {
+  --background: 0 0% 100% !important; /* Pure white */
+  --foreground: 222.2 47.4% 11.2% !important; /* Dark gray */
+  --card: 0 0% 100% !important; /* White cards */
+  --card-foreground: 222.2 47.4% 11.2% !important; /* Dark gray */
+  --popover: 0 0% 100% !important; /* White */
+  --popover-foreground: 222.2 47.4% 11.2% !important; /* Dark gray */
+  --primary: 217.2 91.2% 59.8% !important; /* Light blue */
+  --primary-foreground: 0 0% 100% !important; /* White */
+  --secondary: 210 40% 96.1% !important; /* Light gray */
+  --secondary-foreground: 222.2 47.4% 11.2% !important; /* Dark gray */
+  --muted: 210 40% 96.1% !important; /* Light gray */
+  --muted-foreground: 215.4 16.3% 46.9% !important; /* Medium gray */
+  --accent: 217.2 91.2% 59.8% !important; /* Light blue */
+  --accent-foreground: 0 0% 100% !important; /* White */
+  --destructive: 0 72.2% 50.6% !important; /* Red */
+  --destructive-foreground: 0 0% 100% !important; /* White */
+  --border: 214.3 31.8% 91.4% !important; /* Light gray border */
+  --input: 0 0% 100% !important; /* White input */
+  --ring: 217.2 91.2% 59.8% !important; /* Light blue ring */
+  color: #374151 !important;
+  background-color: #ffffff !important;
+}
+
+/* Font ve kenar yuvarlaklık değişkenleri */
+@layer base {
+  :root {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    font-family: var(--font-saira), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Input alanları için özel stiller */
+@layer components {
+  .input {
+    @apply bg-gray-50 border-2 border-gray-300 rounded-md px-4 py-2 transition-all duration-200;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white;
+    @apply disabled:opacity-70 disabled:cursor-not-allowed;
+  }
+  
+  /* Shadcn UI Input bileşeni için özel stil */
+  [data-shadcn-input] {
+    @apply bg-gray-50 border-2 border-gray-300 rounded-md transition-all duration-200;
+    @apply focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:bg-white;
+  }
+  
+  /* Select bileşeni için özel stil */
+  [data-shadcn-select-trigger] {
+    @apply bg-gray-50 border-2 border-gray-300 rounded-md transition-all duration-200;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white;
+  }
+}

@@ -1,0 +1,102 @@
+
+> my-v0-project@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.32
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1051ms
+ ✓ Compiled /middleware in 110ms (171 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 900ms (649 modules)
+ GET /login 200 in 1107ms
+ ✓ Compiled in 169ms (329 modules)
+ ✓ Compiled /api/auth/[...nextauth] in 211ms (563 modules)
+ GET /api/auth/session 200 in 440ms
+ GET /api/auth/session 200 in 3ms
+ GET /api/auth/providers 200 in 6ms
+ GET /api/auth/csrf 200 in 4ms
+Auth error: PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+    at $n.handleRequestError (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:7615)
+    at $n.handleAndLogRequestError (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async Object.authorize (webpack-internal:///(rsc)/./app/api/auth/[...nextauth]/route.ts:36:34)
+    at async Object.callback (webpack-internal:///(rsc)/./node_modules/next-auth/core/routes/callback.js:328:14)
+    at async AuthHandler (webpack-internal:///(rsc)/./node_modules/next-auth/core/index.js:260:28)
+    at async NextAuthRouteHandler (webpack-internal:///(rsc)/./node_modules/next-auth/next/index.js:57:28)
+    at async NextAuth._args$ (webpack-internal:///(rsc)/./node_modules/next-auth/next/index.js:89:16)
+    at async /Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1576:40)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+ POST /api/auth/callback/credentials 401 in 8ms
+ GET /login 200 in 73ms
+ GET /login 200 in 23ms
+ GET /api/auth/session 200 in 8ms
+ GET /api/auth/session 200 in 4ms
+ GET /api/auth/providers 200 in 15ms
+ GET /api/auth/csrf 200 in 7ms
+Auth error: PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+    at $n.handleRequestError (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:7615)
+    at $n.handleAndLogRequestError (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async Object.authorize (webpack-internal:///(rsc)/./app/api/auth/[...nextauth]/route.ts:36:34)
+    at async Object.callback (webpack-internal:///(rsc)/./node_modules/next-auth/core/routes/callback.js:328:14)
+    at async AuthHandler (webpack-internal:///(rsc)/./node_modules/next-auth/core/index.js:260:28)
+    at async NextAuthRouteHandler (webpack-internal:///(rsc)/./node_modules/next-auth/next/index.js:57:28)
+    at async NextAuth._args$ (webpack-internal:///(rsc)/./node_modules/next-auth/next/index.js:89:16)
+    at async /Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1576:40)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/hakantapan/Desktop/mehmetcanpt-fitness-uygulamasi/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+ POST /api/auth/callback/credentials 401 in 9ms
