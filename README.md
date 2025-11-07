@@ -1,4 +1,4 @@
-# Mehmetcanpt Uzaktan Eğitim
+# Mehmetcan PT Fitness Uygulaması
 
 Modern personal training (PT) yönetimi için geliştirilmiş tam kapsamlı bir SaaS uygulaması. Eğitmenler, danışanlar ve yöneticiler için rol tabanlı paneller, abonelik paketleri, ödeme entegrasyonları ve zengin iletişim özellikleri sunar.
 
@@ -15,7 +15,7 @@ Modern personal training (PT) yönetimi için geliştirilmiş tam kapsamlı bir 
 - **Mail Entegrasyonu**
   - SMTP/manuel ayarlar (admin panelinden düzenlenebilir)
   - Giriş bildirimi, e-posta doğrulama, program atama, destek yanıtı vb. otomatik e-postalar
-  - Haftalık hatırlatma cron job’ları
+  - Haftalık hatırlatma cron job'ları
 - **Esnek Paket Yönetimi**
   - Admin panelinden paket oluşturma/güncelleme/silme
   - Paket içeriği, süre, popülerlik, aktiflik gibi alanları dinamik yönetme
@@ -61,7 +61,7 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=user@example.com
 SMTP_PASS=password
-MAIL_FROM_NAME=Mehmetcanpt Uzaktan Eğitim
+MAIL_FROM_NAME=Mehmetcan PT
 MAIL_FROM_EMAIL=mail@example.com
 
 # PayTR varsayılanları (admin panelinden de güncellenebilir)
@@ -114,14 +114,22 @@ npm run dev
 - `POST /api/paytr/checkout`: PayTR token alır (giriş yapmış kullanıcı)
 - `POST /api/paytr/complete`: PayTR dönüşünde paketi aktive eder
 - `GET /api/manual-payments`: Aktif manuel havale hesaplarını döndürür
-- Admin API’leri: `/api/admin/paytr-settings`, `/api/admin/manual-payments`, `/api/admin/packages` (role: ADMIN)
+- Admin API'leri: `/api/admin/paytr-settings`, `/api/admin/manual-payments`, `/api/admin/packages` (role: ADMIN)
+
+## Güvenlik Özellikleri
+
+- SQL Injection koruması (Prisma ORM ile güvenli sorgular)
+- Rate limiting (brute force saldırılarına karşı koruma)
+- Dosya yükleme güvenliği (magic bytes kontrolü, path traversal önleme)
+- Şifre validasyonu (uzunluk ve karmaşıklık kontrolü)
+- Güvenli hata mesajları (bilgi sızıntısı önleme)
 
 ## Geliştirme Notları
 
 - TypeScript denetimi için `npx tsc --noEmit` kullanabilirsiniz (bazı mevcut legacy hatalar kalmış olabilir).
-- Cron job’ları `lib/scheduler.ts` üzerinden devreye girer; serverless ortamlarda dikkat edin.
+- Cron job'ları `lib/scheduler.ts` üzerinden devreye girer; serverless ortamlarda dikkat edin.
 - Admin panelindeki sticky butonlar mobilde alt kısımda sabit tutulmuştur.
-- Manuel havale hesapları `manual_payment_accounts` tablosunda saklanır, API logları `admin_logs`’a yazılır.
+- Manuel havale hesapları `manual_payment_accounts` tablosunda saklanır, API logları `admin_logs`'a yazılır.
 
 ## Komutlar
 
@@ -133,4 +141,4 @@ npm run dev
 
 ## Lisans
 
-Bu proje özeldir. Kullanım ve dağıtım hakları Mehmetcanpt Uzaktan Eğitim ekibine aittir.
+Bu proje özeldir. Kullanım ve dağıtım hakları Mehmetcan PT ekibine aittir.
