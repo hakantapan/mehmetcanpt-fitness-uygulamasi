@@ -5,9 +5,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+import { validateImageFile } from '@/lib/validation'
 
 const ensureUploadDir = async (dirPath: string) => {
   try {
@@ -31,12 +29,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Geçerli bir dosya yükleyin' }, { status: 400 })
     }
 
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
-      return NextResponse.json({ error: 'Desteklenmeyen dosya türü' }, { status: 400 })
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'Dosya boyutu 5MB sınırını aşıyor' }, { status: 400 })
+    // Dosya içeriği doğrulama (MIME type ve magic bytes)
+    const fileValidation = await validateImageFile(file)
+    if (!fileValidation.valid) {
+      return NextResponse.json({ error: fileValidation.error }, { status: 400 })
     }
 
     const arrayBuffer = await file.arrayBuffer()
@@ -45,18 +41,25 @@ export async function POST(request: Request) {
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'trainers')
     await ensureUploadDir(uploadDir)
 
-    const fileExtension = file.type === 'image/jpeg'
-      ? 'jpg'
-      : file.type === 'image/png'
-        ? 'png'
-        : file.type === 'image/webp'
-          ? 'webp'
-          : file.type === 'image/gif'
-            ? 'gif'
-            : 'bin'
+    // Güvenli dosya uzantısı belirleme
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    }
+    const fileExtension = mimeToExt[file.type] || 'bin'
 
     const fileName = `${randomUUID()}.${fileExtension}`
     const filePath = path.join(uploadDir, fileName)
+    
+    // Path traversal kontrolü
+    const resolvedPath = path.resolve(filePath)
+    const resolvedDir = path.resolve(uploadDir)
+    if (!resolvedPath.startsWith(resolvedDir)) {
+      return NextResponse.json({ error: 'Geçersiz dosya yolu' }, { status: 400 })
+    }
+    
     const publicPath = `/uploads/trainers/${fileName}`
 
     await fs.writeFile(filePath, buffer)

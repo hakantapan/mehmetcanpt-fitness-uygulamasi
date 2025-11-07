@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { Prisma, type PackageStatus } from "@prisma/client"
+import { validatePassword, validateEmail } from "@/lib/validation"
 
 const ROLE_MAP: Record<string, "CLIENT" | "TRAINER"> = {
   danisan: "CLIENT",
@@ -205,7 +206,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error("Admin users fetch error:", error)
-    return NextResponse.json({ error: "Kullanıcılar yüklenemedi" }, { status: 500 })
+    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu" }, { status: 500 })
   }
 }
 
@@ -227,6 +228,17 @@ export async function POST(request: NextRequest) {
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Ad, e-posta ve şifre zorunludur" }, { status: 400 })
+    }
+
+    // Email format kontrolü
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: "Geçersiz email formatı" }, { status: 400 })
+    }
+
+    // Şifre güvenlik kontrolü
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.valid) {
+      return NextResponse.json({ error: passwordValidation.error }, { status: 400 })
     }
 
     const role = ROLE_MAP[roleInput]
@@ -261,7 +273,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "Bu e-posta adresi zaten kayıtlı" }, { status: 409 })
     }
-    return NextResponse.json({ error: "Kullanıcı oluşturulamadı" }, { status: 500 })
+    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu" }, { status: 500 })
   }
 }
 
@@ -322,6 +334,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (typeof body.password === "string" && body.password.trim().length > 0) {
+      // Şifre güvenlik kontrolü
+      const passwordValidation = validatePassword(body.password)
+      if (!passwordValidation.valid) {
+        return NextResponse.json({ error: passwordValidation.error }, { status: 400 })
+      }
       const hashed = await bcrypt.hash(body.password, 12)
       updateData.password = hashed
     }
@@ -361,7 +378,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Admin users update error:", error)
-    return NextResponse.json({ error: "Kullanıcı güncellenemedi" }, { status: 500 })
+    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu" }, { status: 500 })
   }
 }
 
@@ -390,6 +407,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Admin users delete error:", error)
-    return NextResponse.json({ error: "Kullanıcı silinemedi" }, { status: 500 })
+    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu" }, { status: 500 })
   }
 }

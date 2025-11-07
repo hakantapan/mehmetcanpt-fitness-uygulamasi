@@ -8,11 +8,9 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Ortam değişkenleri için ek güvenlik
-  env: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  },
+  // NOT: Environment variables artık env objesinde expose edilmiyor
+  // Güvenlik için: Server-side'da process.env ile erişilebilir
+  // Client-side'da sadece NEXT_PUBLIC_ prefix'li değişkenler erişilebilir
 
   // Webpack ve diğer gelişmiş konfigürasyonlar
   webpack: (config) => {

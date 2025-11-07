@@ -5,6 +5,7 @@ import { randomUUID } from "crypto"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { getActivePackagePurchase } from "@/lib/subscription"
+import { validateImageFile } from "@/lib/validation"
 
 type StoredPhoto = {
   id: string
@@ -112,16 +113,14 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get("photo")
 
-    if (!(file instanceof Blob)) {
+    if (!(file instanceof Blob) || !(file instanceof File)) {
       return NextResponse.json({ error: "Geçersiz dosya" }, { status: 400 })
     }
 
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "Yalnızca görsel dosyalar yüklenebilir" }, { status: 400 })
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "Dosya boyutu 5MB'ı aşmamalıdır" }, { status: 400 })
+    // Dosya içeriği doğrulama (MIME type ve magic bytes)
+    const fileValidation = await validateImageFile(file as File)
+    if (!fileValidation.valid) {
+      return NextResponse.json({ error: fileValidation.error }, { status: 400 })
     }
 
     const profile = await prisma.userProfile.findUnique({

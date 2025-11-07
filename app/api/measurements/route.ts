@@ -148,21 +148,17 @@ export async function POST(request: NextRequest) {
 
     const finalUnit = unit ?? (type === 'weight' ? 'kg' : 'cm')
 
-    // Build dynamic SQL for recordedAt optional
-    const baseSql = `
-      INSERT INTO "public"."measurements"
-        ("userId","type","value","unit","notes"${recordedAt ? ',"recordedAt"' : ''})
-      VALUES
-        ($1, $2::"MeasurementType", $3, $4, $5${recordedAt ? ',$6' : ''})
-      RETURNING "id","userId","type","value","unit","recordedAt","notes"
-    `
-    const params: any[] = recordedAt
-      ? [session.user.id, type as string, numericValue, finalUnit, notes, recordedAt]
-      : [session.user.id, type as string, numericValue, finalUnit, notes]
-
-    // @ts-ignore
-    const rows = await prisma.$queryRawUnsafe(baseSql, ...params)
-    const created = Array.isArray(rows) && rows.length > 0 ? rows[0] : null
+    // Güvenli Prisma create metodu kullan - SQL injection riskini önle
+    const created = await prisma.measurement.create({
+      data: {
+        userId: session.user.id,
+        type: type as MeasurementTypeStr,
+        value: numericValue,
+        unit: finalUnit,
+        notes: notes,
+        ...(recordedAt && { recordedAt: recordedAt }),
+      },
+    })
 
     if (created?.type === 'weight') {
       try {

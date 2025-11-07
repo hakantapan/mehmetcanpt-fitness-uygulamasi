@@ -3,12 +3,36 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendVerificationEmail } from '@/lib/mail'
+import { validatePassword, validateEmail } from '@/lib/validation'
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 // UserRole type tanımı
 type UserRole = 'ADMIN' | 'TRAINER' | 'CLIENT'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting kontrolü - kayıt işlemi için daha sıkı limit
+    const identifier = getClientIdentifier(request)
+    const rateLimit = checkRateLimit(`register:${identifier}`, {
+      maxRequests: 5, // 15 dakikada maksimum 5 kayıt denemesi
+      windowMs: 15 * 60 * 1000,
+    })
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: rateLimit.error || 'Çok fazla kayıt denemesi. Lütfen daha sonra tekrar deneyin.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+            'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetTime / 1000)),
+            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+          },
+        }
+      )
+    }
+
     const body = await request.json()
     const {
       email,
@@ -30,6 +54,23 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: 'Email, şifre, ad ve soyad gerekli' },
+        { status: 400 }
+      )
+    }
+
+    // Email format kontrolü
+    if (!validateEmail(email)) {
+      return NextResponse.json(
+        { error: 'Geçersiz email formatı' },
+        { status: 400 }
+      )
+    }
+
+    // Şifre güvenlik kontrolü
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { error: passwordValidation.error },
         { status: 400 }
       )
     }
@@ -154,8 +195,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Register error:', error)
+    // Güvenlik: Detaylı hata bilgisi kullanıcıya gösterilmez
     return NextResponse.json(
-      { error: 'Bir hata oluştu' },
+      { error: 'Kayıt işlemi sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.' },
       { status: 500 }
     )
   }

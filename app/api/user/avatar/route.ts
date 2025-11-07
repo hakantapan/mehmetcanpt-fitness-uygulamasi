@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import { writeFile } from 'fs/promises'
 import path from 'path'
+import { validateImageFile, sanitizeFileName } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,26 +17,30 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('avatar') as File
     
-    if (!file) {
-      return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 })
+    if (!file || !(file instanceof File)) {
+      return NextResponse.json({ error: 'Geçersiz dosya' }, { status: 400 })
     }
 
-    // Dosya türü kontrolü
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Sadece resim dosyaları yüklenebilir' }, { status: 400 })
-    }
-
-    // Dosya boyutu kontrolü (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'Dosya boyutu 5MB\'dan küçük olmalıdır' }, { status: 400 })
+    // Dosya içeriği doğrulama (MIME type ve magic bytes)
+    const fileValidation = await validateImageFile(file)
+    if (!fileValidation.valid) {
+      return NextResponse.json({ error: fileValidation.error }, { status: 400 })
     }
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Dosya adı oluştur
-    const fileName = `${session.user.id}_${Date.now()}.${file.name.split('.').pop()}`
+    // Güvenli dosya adı oluştur (path traversal ve özel karakterleri önle)
+    const fileName = sanitizeFileName(file.name, session.user.id)
     const filePath = path.join(process.cwd(), 'public', 'uploads', 'avatars', fileName)
+    
+    // Path traversal kontrolü - dosya yolu public/uploads/avatars içinde olmalı
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars')
+    const resolvedPath = path.resolve(filePath)
+    const resolvedDir = path.resolve(uploadsDir)
+    if (!resolvedPath.startsWith(resolvedDir)) {
+      return NextResponse.json({ error: 'Geçersiz dosya yolu' }, { status: 400 })
+    }
 
     // Uploads klasörünü oluştur
     const { mkdir } = await import('fs/promises')
