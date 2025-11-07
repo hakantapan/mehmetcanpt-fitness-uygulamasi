@@ -272,7 +272,7 @@ async function main() {
       secure: process.env.SMTP_SECURE === "true",
       username: process.env.SMTP_USER || null,
       password: process.env.SMTP_PASS || null,
-      fromName: process.env.MAIL_FROM_NAME || "Mehmetcan PT",
+      fromName: process.env.MAIL_FROM_NAME || "Mehmetcanpt Uzaktan Eğitim",
       fromEmail: process.env.MAIL_FROM_EMAIL || "noreply@example.com",
       replyTo: process.env.MAIL_REPLY_TO || null,
       isActive: true,

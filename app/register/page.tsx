@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const selectedPackageSlug = searchParams.get('paket')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -87,7 +89,21 @@ export default function RegisterPage() {
         }
       }
       
-      router.push('/login?registered=true')
+      if (selectedPackageSlug) {
+        try {
+          window.localStorage.setItem('pendingPackageSelection', selectedPackageSlug)
+        } catch (_error) {
+          // localStorage kullanılamıyorsa sessizce geç
+        }
+      }
+
+      const loginParams = new URLSearchParams()
+      loginParams.set('registered', 'true')
+      if (selectedPackageSlug) {
+        loginParams.set('callbackUrl', `/paket-satin-al?paket=${selectedPackageSlug}`)
+      }
+
+      router.push(`/login?${loginParams.toString()}`)
     } catch (error: any) {
       setError(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.')
     } finally {

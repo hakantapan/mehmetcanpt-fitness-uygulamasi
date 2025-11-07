@@ -14,8 +14,8 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react"
-import { formatDistanceToNowStrict } from "date-fns"
-import { tr } from "date-fns/locale"
+import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict"
+import { tr } from "date-fns/locale/tr"
 
 type LogLevel = "INFO" | "WARN" | "ERROR" | "AUDIT"
 type LogSource = "auth" | "support" | "trainer" | "scheduler" | "mail" | "subscription"

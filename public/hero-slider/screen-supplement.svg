@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1624">
+  <defs>
+    <linearGradient id="gradient-supplement" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe8f5" />
+      <stop offset="100%" stop-color="#ff4d8d" />
+    </linearGradient>
+  </defs>
+  <rect width="750" height="1624" rx="64" fill="url(#gradient-supplement)" />
+  <g fill="#2d2632" font-family="Inter, system-ui, -apple-system" text-anchor="middle">
+    <text font-size="48" font-weight="600" x="50%" y="140">Supplement</text>
+    <text font-size="42" x="50%" y="220">Takviyeler</text>
+    <text font-size="32" x="50%" y="290">Programını takip et</text>
+  </g>
+  <rect x="80" y="360" width="590" height="280" rx="32" fill="#ffffffdd" />
+  <g fill="#d81b60" font-family="Inter, system-ui, -apple-system">
+    <text font-size="36" font-weight="600" x="160" y="430">Creatine</text>
+    <text font-size="60" font-weight="700" x="160" y="520">5 g</text>
+    <text font-size="32" x="160" y="580">Antrenman Öncesi</text>
+  </g>
+</svg>

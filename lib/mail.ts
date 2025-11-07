@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer"
 import type SMTPTransport from "nodemailer/lib/smtp-transport"
-import type { LogLevel } from "@prisma/client"
+import { Prisma, type LogLevel } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import {
   verificationEmail,
@@ -57,7 +57,7 @@ const envMailConfig = (): MailConfig | null => {
             pass: process.env.SMTP_PASS,
           }
         : undefined,
-    fromName: process.env.MAIL_FROM_NAME || "Mehmetcan PT",
+    fromName: process.env.MAIL_FROM_NAME || "Mehmetcanpt Uzaktan Eğitim",
     fromEmail: process.env.MAIL_FROM_EMAIL || process.env.SMTP_USER || "noreply@example.com",
     replyTo: process.env.MAIL_REPLY_TO || null,
   }
@@ -171,7 +171,7 @@ async function recordMailLog(entry: {
         actorId: entry.actorId ?? undefined,
         actorEmail: entry.actorEmail ?? undefined,
         source: entry.source ?? MAIL_DEFAULT_SOURCE,
-        context: entry.context,
+        context: entry.context ? (entry.context as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
     })
   } catch (error) {

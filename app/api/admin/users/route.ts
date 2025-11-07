@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import type { Prisma } from "@prisma/client"
+import { Prisma, type PackageStatus } from "@prisma/client"
 
 const ROLE_MAP: Record<string, "CLIENT" | "TRAINER"> = {
   danisan: "CLIENT",
@@ -19,7 +19,7 @@ const STATUS_MAP: Record<string, boolean> = {
   inactive: false,
 }
 
-const ACTIVE_PACKAGE_STATUSES = ["ACTIVE", "PENDING"]
+const ACTIVE_PACKAGE_STATUSES: PackageStatus[] = ["ACTIVE", "PENDING"]
 
 async function ensureAdmin(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -276,22 +276,86 @@ export async function PATCH(request: NextRequest) {
     }
 
     const id = typeof body.id === "string" ? body.id : ""
-    const status = typeof body.status === "string" ? body.status : ""
-
-    if (!id || !status) {
-      return NextResponse.json({ error: "Kullanıcı bilgileri eksik" }, { status: 400 })
+    if (!id) {
+      return NextResponse.json({ error: "Kullanıcı ID gerekli" }, { status: 400 })
     }
 
-    const mappedStatus = STATUS_MAP[status]
-    if (typeof mappedStatus !== "boolean") {
-      return NextResponse.json({ error: "Geçersiz durum bilgisi" }, { status: 400 })
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        profile: true,
+      },
+    })
+
+    if (!existingUser) {
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
+    }
+
+    const updateData: Prisma.UserUpdateInput = {}
+    const profileUpdates: Prisma.UserProfileUpdateInput = {}
+
+    if (typeof body.status === "string") {
+      const mappedStatus = STATUS_MAP[body.status]
+      if (typeof mappedStatus !== "boolean") {
+        return NextResponse.json({ error: "Geçersiz durum bilgisi" }, { status: 400 })
+      }
+      updateData.isActive = mappedStatus
+    }
+
+    if (typeof body.role === "string") {
+      const mappedRole = ROLE_MAP[body.role] ?? ROLE_MAP[body.role.toLowerCase() as keyof typeof ROLE_MAP]
+      if (!mappedRole) {
+        return NextResponse.json({ error: "Geçersiz rol seçimi" }, { status: 400 })
+      }
+      updateData.role = mappedRole
+    }
+
+    if (typeof body.name === "string" && body.name.trim()) {
+      const [firstName, ...rest] = body.name.trim().split(/\s+/)
+      profileUpdates.firstName = firstName
+      profileUpdates.lastName = rest.join(" ") || null
+    }
+
+    if (typeof body.phone === "string") {
+      const phone = body.phone.trim()
+      profileUpdates.phone = phone.length ? phone : null
+    }
+
+    if (typeof body.password === "string" && body.password.trim().length > 0) {
+      const hashed = await bcrypt.hash(body.password, 12)
+      updateData.password = hashed
+    }
+
+    if (Object.keys(updateData).length === 0 && Object.keys(profileUpdates).length === 0) {
+      return NextResponse.json({ error: "Güncellenecek veri bulunamadı" }, { status: 400 })
+    }
+
+    if (Object.keys(profileUpdates).length > 0) {
+      if (existingUser.profile) {
+        updateData.profile = {
+          update: profileUpdates,
+        }
+      } else {
+        const firstName =
+          typeof profileUpdates.firstName === "string" && profileUpdates.firstName.trim()
+            ? profileUpdates.firstName.trim()
+            : existingUser.email.split("@")[0]
+        const lastName =
+          typeof profileUpdates.lastName === "string" ? profileUpdates.lastName : existingUser.profile?.lastName ?? null
+
+        updateData.profile = {
+          create: {
+            firstName,
+            lastName,
+            phone: typeof profileUpdates.phone === "string" ? profileUpdates.phone : null,
+          },
+        }
+      }
     }
 
     await prisma.user.update({
       where: { id },
-      data: {
-        isActive: mappedStatus,
-      },
+      data: updateData,
     })
 
     return NextResponse.json({ success: true })

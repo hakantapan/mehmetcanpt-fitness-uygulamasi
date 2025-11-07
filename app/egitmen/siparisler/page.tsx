@@ -93,8 +93,9 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
 
 const capitalize = (value: string) => {
   if (!value) return value
-  const [first, ...rest] = value
-  return first.toLocaleUpperCase("tr-TR") + rest.join("")
+  const first = value.charAt(0)
+  const rest = value.slice(1)
+  return first.toLocaleUpperCase("tr-TR") + rest
 }
 
 const formatDate = (value: string | null) => {

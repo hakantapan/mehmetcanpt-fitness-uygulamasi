@@ -253,11 +253,11 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
             <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="hidden sm:block">
-            <h1 className="font-bold text-gray-800 text-lg">Mehmetcan PT Online</h1>
+            <h1 className="font-bold text-gray-800 text-lg">Mehmetcanpt Uzaktan Eğitim</h1>
             <p className="text-sm text-gray-500 capitalize">{userRole.toLowerCase()} Panel</p>
           </div>
           <div className="sm:hidden">
-            <h1 className="font-bold text-gray-800 text-base">Mehmetcan PT Online</h1>
+            <h1 className="font-bold text-gray-800 text-base">Mehmetcanpt Uzaktan Eğitim</h1>
           </div>
         </div>
         

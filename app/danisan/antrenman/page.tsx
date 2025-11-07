@@ -247,15 +247,17 @@ export default function ClientWorkoutProgramPage() {
                               {videoSrc && (
                                 <div className="yt-wrapper rounded-lg overflow-hidden border border-border">
                                   <div className="relative pb-[177.78%] sm:pb-[56.25%]">
-                                    <iframe
-                                      src={videoSrc}
-                                      title={label}
-                                      frameBorder="0"
-                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                      referrerPolicy="strict-origin-when-cross-origin"
-                                      allowFullScreen
-                                      className="absolute inset-0 h-full w-full"
-                                    />
+                                    <div className="absolute inset-0 overflow-hidden">
+                                      <iframe
+                                        src={videoSrc}
+                                        title={label}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerPolicy="strict-origin-when-cross-origin"
+                                        allowFullScreen
+                                        className="absolute inset-0 h-full w-full origin-center scale-[1.33]"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               )}

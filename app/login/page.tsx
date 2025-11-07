@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -33,8 +34,31 @@ export default function LoginPage() {
       if (result?.error) {
         setError('E-posta veya şifre hatalı')
       } else {
-        // Başarılı giriş - role göre yönlendirme yapılabilir
-        router.push('/')
+        const callbackUrl = searchParams.get('callbackUrl')
+
+        if (callbackUrl) {
+          router.push(callbackUrl)
+        } else {
+          try {
+            const storedPackage = window.localStorage.getItem('pendingPackageSelection')
+            if (storedPackage) {
+              window.localStorage.removeItem('pendingPackageSelection')
+              router.push(`/paket-satin-al?paket=${storedPackage}`)
+              router.refresh()
+              return
+            }
+          } catch (_error) {
+            // localStorage erişilemiyorsa normal akış devam etsin
+          }
+          router.push('/')
+        }
+
+        try {
+          window.localStorage.removeItem('pendingPackageSelection')
+        } catch (_error) {
+          // localStorage erişilemiyorsa sessizce geç
+        }
+
         router.refresh()
       }
     } catch (error) {

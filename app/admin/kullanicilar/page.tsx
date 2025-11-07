@@ -77,6 +77,16 @@ const INITIAL_NEW_USER = {
   notes: "",
 }
 
+const INITIAL_EDIT_USER = {
+  id: "",
+  name: "",
+  email: "",
+  phone: "",
+  role: "danisan" as "danisan" | "egitmen",
+  status: "active" as "active" | "inactive",
+  password: "",
+}
+
 export default function UserManagement() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
@@ -89,9 +99,12 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null)
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [isViewUserOpen, setIsViewUserOpen] = useState(false)
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false)
 
   const [newUser, setNewUser] = useState(INITIAL_NEW_USER)
+  const [editUser, setEditUser] = useState(INITIAL_EDIT_USER)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false)
 
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [usersError, setUsersError] = useState<string | null>(null)
@@ -246,10 +259,84 @@ export default function UserManagement() {
   }
 
   const handleEditUser = (user: UserRow) => {
-    toast({
-      title: "Bilgilendirme",
-      description: `${user.name} kullanıcısı için düzenleme özelliği yakında eklenecek.`,
+    setEditUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? "",
+      role: user.role,
+      status: user.status,
+      password: "",
     })
+    setIsEditUserOpen(true)
+  }
+
+  const handleUpdateUser = async () => {
+    if (!editUser.id) {
+      toast({
+        title: "Hata",
+        description: "Kullanıcı bulunamadı.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!editUser.name.trim()) {
+      toast({
+        title: "Eksik bilgi",
+        description: "Ad Soyad alanı boş bırakılamaz.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsEditSubmitting(true)
+
+      const payload: Record<string, unknown> = {
+        id: editUser.id,
+        name: editUser.name.trim(),
+        role: editUser.role === "egitmen" ? "TRAINER" : "CLIENT",
+        status: editUser.status,
+      }
+
+      payload.phone = editUser.phone ?? ""
+
+      if (editUser.password.trim()) {
+        payload.password = editUser.password.trim()
+      }
+
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || "Kullanıcı güncellenemedi")
+      }
+
+      toast({
+        title: "Kullanıcı güncellendi",
+        description: "Kullanıcı bilgileri başarıyla güncellendi.",
+      })
+
+      setIsEditUserOpen(false)
+      setEditUser(INITIAL_EDIT_USER)
+      await fetchUsers()
+    } catch (error) {
+      console.error("User edit error:", error)
+      toast({
+        title: "Hata",
+        description: (error as Error).message || "Kullanıcı güncellenirken bir sorun oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsEditSubmitting(false)
+    }
   }
 
   const handleViewUser = (user: UserRow) => {
@@ -681,6 +768,109 @@ export default function UserManagement() {
                 )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit User Dialog */}
+        <Dialog
+          open={isEditUserOpen}
+          onOpenChange={(open) => {
+            setIsEditUserOpen(open)
+            if (!open) {
+              setEditUser(INITIAL_EDIT_USER)
+              setIsEditSubmitting(false)
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Kullanıcıyı Düzenle</DialogTitle>
+              <DialogDescription>Kullanıcı bilgilerini güncelleyin. Şifreyi boş bırakırsanız değişmez.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editName" className="text-right">
+                  Ad Soyad
+                </Label>
+                <Input
+                  id="editName"
+                  value={editUser.name}
+                  onChange={(event) => setEditUser((prev) => ({ ...prev, name: event.target.value }))}
+                  className="col-span-3"
+                  disabled={isEditSubmitting}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">E-posta</Label>
+                <Input value={editUser.email} className="col-span-3" disabled />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editPhone" className="text-right">
+                  Telefon
+                </Label>
+                <Input
+                  id="editPhone"
+                  value={editUser.phone}
+                  onChange={(event) => setEditUser((prev) => ({ ...prev, phone: event.target.value }))}
+                  className="col-span-3"
+                  disabled={isEditSubmitting}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Rol</Label>
+                <Select
+                  value={editUser.role}
+                  onValueChange={(value: "danisan" | "egitmen") => setEditUser((prev) => ({ ...prev, role: value }))}
+                  disabled={isEditSubmitting}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Rol seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="danisan">Danışan</SelectItem>
+                    <SelectItem value="egitmen">Eğitmen</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Durum</Label>
+                <Select
+                  value={editUser.status}
+                  onValueChange={(value: "active" | "inactive") => setEditUser((prev) => ({ ...prev, status: value }))}
+                  disabled={isEditSubmitting}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Durum seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Pasif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editPassword" className="text-right">
+                  Yeni Şifre
+                </Label>
+                <Input
+                  id="editPassword"
+                  type="password"
+                  placeholder="Şifreyi değiştirmek için girin"
+                  value={editUser.password}
+                  onChange={(event) => setEditUser((prev) => ({ ...prev, password: event.target.value }))}
+                  className="col-span-3"
+                  disabled={isEditSubmitting}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEditUserOpen(false)} disabled={isEditSubmitting}>
+                İptal
+              </Button>
+              <Button type="button" onClick={handleUpdateUser} disabled={isEditSubmitting}>
+                {isEditSubmitting ? "Güncelleniyor..." : "Güncelle"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

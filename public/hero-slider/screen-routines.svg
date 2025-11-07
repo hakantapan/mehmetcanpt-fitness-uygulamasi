@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1624">
+  <defs>
+    <linearGradient id="gradient-routines" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff7e5" />
+      <stop offset="100%" stop-color="#ffb347" />
+    </linearGradient>
+  </defs>
+  <rect width="750" height="1624" rx="64" fill="url(#gradient-routines)" />
+  <g fill="#2d2632" font-family="Inter, system-ui, -apple-system" text-anchor="middle">
+    <text font-size="48" font-weight="600" x="50%" y="140">Rutinler</text>
+    <text font-size="42" x="50%" y="220">Genel Isınma</text>
+    <text font-size="32" x="50%" y="290">10 dakika</text>
+  </g>
+  <rect x="80" y="360" width="590" height="280" rx="32" fill="#ffffffdd" />
+  <g fill="#f97316" font-family="Inter, system-ui, -apple-system">
+    <text font-size="36" font-weight="600" x="160" y="430">Öne çıkan egzersizler</text>
+    <text font-size="38" font-weight="700" x="160" y="520">Kol Çevirme</text>
+    <text font-size="32" x="160" y="580">45 saniye • Omuz</text>
+  </g>
+</svg>

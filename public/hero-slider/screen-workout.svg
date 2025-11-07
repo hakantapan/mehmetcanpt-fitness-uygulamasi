@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1624">
+  <defs>
+    <linearGradient id="gradient-workout" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <rect width="750" height="1624" rx="64" fill="url(#gradient-workout)" />
+  <g fill="#0f172a" font-family="Inter, system-ui, -apple-system" text-anchor="middle">
+    <text font-size="48" font-weight="600" x="50%" y="140">1. Gün</text>
+    <text font-size="42" x="50%" y="220">Squat</text>
+    <text font-size="32" x="50%" y="290">3 set • 12 tekrar</text>
+  </g>
+  <rect x="80" y="360" width="590" height="420" rx="32" fill="#ffffffdd" />
+  <g fill="#1f2937" font-family="Inter, system-ui, -apple-system">
+    <text font-size="60" font-weight="700" x="160" y="520">Video</text>
+    <text font-size="32" x="160" y="600">Quadriceps • Glutes • Core</text>
+  </g>
+</svg>

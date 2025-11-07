@@ -23,8 +23,8 @@ import {
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
-import { formatDistanceToNowStrict } from "date-fns"
-import { tr } from "date-fns/locale"
+import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict"
+import { tr } from "date-fns/locale/tr"
 
 type LogLevelType = "INFO" | "WARN" | "ERROR" | "AUDIT"
 

@@ -238,9 +238,11 @@ export default function GelisimPage() {
           if (photosRes.ok) {
             const photoJson = await photosRes.json()
             const normalizedPhotos: ProgressPhoto[] = Array.isArray(photoJson?.photos)
-              ? photoJson.photos
-                  .map((item: any) => normalizeProgressPhoto(item))
-                  .filter((item): item is ProgressPhoto => Boolean(item))
+              ? (photoJson.photos as unknown[]).reduce<ProgressPhoto[]>((acc, item) => {
+                  const normalized = normalizeProgressPhoto(item)
+                  if (normalized) acc.push(normalized)
+                  return acc
+                }, [])
               : []
             setPhotos(normalizedPhotos)
           } else if (photosRes.status === 404) {
@@ -649,9 +651,11 @@ export default function GelisimPage() {
 
       const json = await response.json()
       const updatedPhotos: ProgressPhoto[] = Array.isArray(json?.photos)
-        ? json.photos
-            .map((item: any) => normalizeProgressPhoto(item))
-            .filter((item): item is ProgressPhoto => Boolean(item))
+        ? (json.photos as unknown[]).reduce<ProgressPhoto[]>((acc, item) => {
+            const normalized = normalizeProgressPhoto(item)
+            if (normalized) acc.push(normalized)
+            return acc
+          }, [])
         : []
       setPhotos(updatedPhotos)
       setPhotoUploadSuccess("Fotoğraf yüklendi. En eski kayıt otomatik silindi.")

@@ -237,7 +237,7 @@ export default function FinancialReports() {
                   CreditCard,
                 }
                 const Icon = iconMap[metric.icon] ?? DollarSign
-                const trendIcon = metric.trend === "up" ? ArrowUpRight : ArrowDownRight
+                const TrendIcon = metric.trend === "up" ? ArrowUpRight : ArrowDownRight
                 const changeClass = metric.trend === "up" ? "text-green-600" : "text-red-600"
                 return (
                   <Card key={metric.name}>
@@ -248,7 +248,7 @@ export default function FinancialReports() {
                     <CardContent>
                       <div className="text-2xl font-bold">{formatCurrency(metric.value)}</div>
                       <div className="flex items-center space-x-1 text-xs">
-                        <trendIcon className={`h-3 w-3 ${changeClass}`} />
+                        <TrendIcon className={`h-3 w-3 ${changeClass}`} />
                         <span className={changeClass}>{`${metric.change >= 0 ? "+" : ""}${metric.change.toFixed(1)}%`}</span>
                         <span className="text-muted-foreground">önceki döneme göre</span>
                       </div>

@@ -121,7 +121,7 @@ export function FitnessLayout({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Dumbbell className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h1 className="font-bold text-lg text-foreground">Mehmetcan PT Online</h1>
+          <h1 className="font-bold text-lg text-foreground">Mehmetcanpt Uzaktan Eğitim</h1>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -135,7 +135,7 @@ export function FitnessLayout({ children }: { children: React.ReactNode }) {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Dumbbell className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="font-bold text-xl text-foreground">Mehmetcan PT Online</h1>
+            <h1 className="font-bold text-xl text-foreground">Mehmetcanpt Uzaktan Eğitim</h1>
           </div>
 
           <nav className="flex-1 px-4 py-6 space-y-2">
@@ -199,7 +199,7 @@ export function FitnessLayout({ children }: { children: React.ReactNode }) {
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <Dumbbell className="w-5 h-5 text-primary-foreground" />
                   </div>
-                  <h1 className="font-bold text-lg text-foreground">Mehmetcan PT Online</h1>
+                  <h1 className="font-bold text-lg text-foreground">Mehmetcanpt Uzaktan Eğitim</h1>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setMobileMenuOpen(false)}>
                   <X className="w-5 h-5" />

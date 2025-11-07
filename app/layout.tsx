@@ -16,7 +16,7 @@ const saira = Saira({
 })
 
 export const metadata: Metadata = {
-  title: 'Mehmetcan PT Online',
+  title: 'Mehmetcanpt Uzaktan Eğitim',
   description: 'Kişisel antrenör yönetim platformu',
   generator: 'mehmetcan-pt-online',
 }

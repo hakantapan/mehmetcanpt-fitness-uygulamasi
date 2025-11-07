@@ -4,7 +4,7 @@ type TemplatePayload = {
   text?: string
 }
 
-const appName = process.env.APP_NAME || "Mehmetcan PT Online"
+const appName = process.env.APP_NAME || "Mehmetcanpt Uzaktan Eğitim"
 
 const buildHtmlLayout = (title: string, body: string) => `
   <div style="font-family: Arial, sans-serif; background-color:#f5f5f5; padding:24px;">

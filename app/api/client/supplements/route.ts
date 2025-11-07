@@ -31,43 +31,46 @@ const parseStringArray = (value: unknown): string[] => {
 const normalizeSupplementEntries = (value: unknown): Array<Required<ProgramSupplement>> => {
   if (!Array.isArray(value)) return []
 
-  return value
-    .map((item, index) => {
-      if (!item || typeof item !== 'object') return null
-      const entry = item as ProgramSupplement
-      const templateId =
-        typeof entry.templateId === 'string' && entry.templateId.trim().length > 0
-          ? entry.templateId.trim()
-          : null
-      const name =
-        typeof entry.name === 'string' && entry.name.trim().length > 0
-          ? entry.name.trim()
-          : null
+  const supplements: Array<Required<ProgramSupplement>> = []
 
-      if (!templateId || !name) return null
+  value.forEach((item, index) => {
+    if (!item || typeof item !== 'object') return
 
-      const id =
-        typeof entry.id === 'string' && entry.id.trim().length > 0
-          ? entry.id.trim()
-          : `supplement-${index}-${templateId}`
+    const entry = item as ProgramSupplement
+    const templateId =
+      typeof entry.templateId === 'string' && entry.templateId.trim().length > 0
+        ? entry.templateId.trim()
+        : null
+    const name =
+      typeof entry.name === 'string' && entry.name.trim().length > 0
+        ? entry.name.trim()
+        : null
 
-      return {
-        id,
-        templateId,
-        name,
-        category: typeof entry.category === 'string' ? entry.category : null,
-        brand: typeof entry.brand === 'string' ? entry.brand : null,
-        dosage: typeof entry.dosage === 'string' ? entry.dosage : null,
-        timing: typeof entry.timing === 'string' ? entry.timing : null,
-        defaultDosage: typeof entry.defaultDosage === 'string' ? entry.defaultDosage : null,
-        defaultTiming: typeof entry.defaultTiming === 'string' ? entry.defaultTiming : null,
-        benefits: parseStringArray(entry.benefits),
-        timingOptions: parseStringArray(entry.timingOptions),
-        notes: typeof entry.notes === 'string' ? entry.notes : null,
-        price: typeof entry.price === 'number' ? entry.price : null
-      }
+    if (!templateId || !name) return
+
+    const id =
+      typeof entry.id === 'string' && entry.id.trim().length > 0
+        ? entry.id.trim()
+        : `supplement-${index}-${templateId}`
+
+    supplements.push({
+      id,
+      templateId,
+      name,
+      category: typeof entry.category === 'string' ? entry.category : null,
+      brand: typeof entry.brand === 'string' ? entry.brand : null,
+      dosage: typeof entry.dosage === 'string' ? entry.dosage : null,
+      timing: typeof entry.timing === 'string' ? entry.timing : null,
+      defaultDosage: typeof entry.defaultDosage === 'string' ? entry.defaultDosage : null,
+      defaultTiming: typeof entry.defaultTiming === 'string' ? entry.defaultTiming : null,
+      benefits: parseStringArray(entry.benefits),
+      timingOptions: parseStringArray(entry.timingOptions),
+      notes: typeof entry.notes === 'string' ? entry.notes : null,
+      price: typeof entry.price === 'number' ? entry.price : null
     })
-    .filter((item): item is Required<ProgramSupplement> => item !== null)
+  })
+
+  return supplements
 }
 
 export async function GET() {

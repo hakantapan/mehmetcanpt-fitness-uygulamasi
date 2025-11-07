@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma"
 import { sendWeeklyCheckinEmail } from "@/lib/mail"
+import { PackageStatus } from "@prisma/client"
 
 export async function sendWeeklyCheckinReminderEmails() {
-  const activeStatuses = ["ACTIVE", "PENDING"] as const
+  const activeStatuses: PackageStatus[] = [PackageStatus.ACTIVE, PackageStatus.PENDING]
 
   const purchases = await prisma.packagePurchase.findMany({
     where: {

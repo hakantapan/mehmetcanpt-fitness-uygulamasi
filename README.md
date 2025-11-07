@@ -1,4 +1,4 @@
-# Mehmetcan PT Fitness Uygulaması
+# Mehmetcanpt Uzaktan Eğitim
 
 Modern personal training (PT) yönetimi için geliştirilmiş tam kapsamlı bir SaaS uygulaması. Eğitmenler, danışanlar ve yöneticiler için rol tabanlı paneller, abonelik paketleri, ödeme entegrasyonları ve zengin iletişim özellikleri sunar.
 
@@ -61,7 +61,7 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=user@example.com
 SMTP_PASS=password
-MAIL_FROM_NAME=Mehmetcan PT
+MAIL_FROM_NAME=Mehmetcanpt Uzaktan Eğitim
 MAIL_FROM_EMAIL=mail@example.com
 
 # PayTR varsayılanları (admin panelinden de güncellenebilir)
@@ -133,4 +133,4 @@ npm run dev
 
 ## Lisans
 
-Bu proje özeldir. Kullanım ve dağıtım hakları Mehmetcan PT ekibine aittir.
+Bu proje özeldir. Kullanım ve dağıtım hakları Mehmetcanpt Uzaktan Eğitim ekibine aittir.

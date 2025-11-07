@@ -347,6 +347,7 @@ model User {
   quickReplies     SupportQuickReply[] @relation("SupportQuickReplyTrainer")
   orders           TrainerOrder[] @relation("TrainerOrderTrainer")
   packagePurchases PackagePurchase[]
+  bodyAnalyses     BodyAnalysis[]
   adminLogs        AdminLog[] @relation("AdminLogActor")
 
   @@map("users")
@@ -379,6 +380,7 @@ model UserProfile {
   
   // Profil fotoğrafı
   avatar String?
+  bodyPhotos Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -728,4 +730,25 @@ model Measurement {
 
   @@index([userId, type, recordedAt])
   @@map("measurements")
+}
+
+model BodyAnalysis {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight     Float
+  height     Float?
+  bmi        Float?
+  chest      Float?
+  waist      Float?
+  hip        Float?
+  arm        Float?
+  thigh      Float?
+  recordedAt DateTime @default(now())
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, recordedAt])
+  @@map("body_analyses")
 }
