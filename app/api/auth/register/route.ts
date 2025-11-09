@@ -167,21 +167,33 @@ export async function POST(request: NextRequest) {
     
     const fullName = `${user.profile?.firstName ?? ''} ${user.profile?.lastName ?? ''}`.trim() || null
 
-    await sendVerificationEmail(
-      user.email,
-      {
-        name: fullName,
-        verificationUrl,
-      },
-      {
-        actorId: user.id,
-        actorEmail: user.email,
-        context: {
-          userId: user.id,
-          role: user.role,
+    // Email doğrulama maili gönder
+    try {
+      await sendVerificationEmail(
+        user.email,
+        {
+          name: fullName,
+          verificationUrl,
         },
-      },
-    )
+        {
+          actorId: user.id,
+          actorEmail: user.email,
+          source: "auth",
+          context: {
+            userId: user.id,
+            role: user.role,
+            verificationUrl,
+          },
+        },
+      )
+      console.log(`[Register] Verification email sent to ${user.email}`)
+    } catch (mailError) {
+      // Mail gönderimi başarısız olsa bile kullanıcı kaydı başarılı sayılır
+      // Mail ayarları yapılandırılmamış olabilir veya geçici bir sorun olabilir
+      console.error(`[Register] Failed to send verification email to ${user.email}:`, mailError)
+      // Kullanıcıya uyarı verilmez, çünkü kayıt başarılı olmuştur
+      // Admin log'larında zaten kaydedilmiş olacak
+    }
 
     // Şifreyi response'dan çıkar
     const { password: _, emailVerificationToken: __, ...userWithoutPassword } = user

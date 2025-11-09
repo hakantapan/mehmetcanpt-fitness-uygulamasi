@@ -19,7 +19,33 @@ export const metadata: Metadata = {
   title: 'Mehmetcanpt Uzaktan Eğitim',
   description: 'Kişisel antrenör yönetim platformu',
   generator: 'mehmetcan-pt-online',
+  manifest: '/manifest.json',
+  themeColor: '#000000',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Mehmetcanpt',
+  },
+  icons: {
+    icon: [
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-256x256.png', sizes: '256x256', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 }
+
+export const dynamic = 'force-dynamic'
 
 export default function RootLayout({
   children,

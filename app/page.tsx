@@ -196,9 +196,14 @@ export default function LandingPage() {
         setPackagesLoading(true)
         setPackagesError(null)
 
-        const response = await fetch("/api/packages", {
+        const response = await fetch(`/api/packages?t=${Date.now()}`, {
           cache: "no-store",
           signal: controller.signal,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         })
 
         if (!response.ok) {
@@ -396,7 +401,7 @@ export default function LandingPage() {
             {packagesLoading ? (
               <div
                 className={cn(
-                  "mx-auto grid w-full max-w-6xl place-items-stretch gap-6",
+                  "mx-auto grid w-full max-w-7xl place-items-stretch gap-6",
                   "sm:grid-cols-2",
                   "lg:grid-cols-3",
                   packages.length >= 4 && "2xl:grid-cols-4",
@@ -644,7 +649,10 @@ function TopNavigation() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/80">
             <Dumbbell className="h-5 w-5" />
           </span>
-          <span className="text-lg">Mehmetcanpt Uzaktan Eğitim</span>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">Mehmetcanpt Uzaktan Eğitim</span>
+            <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded font-medium">BETA</span>
+          </div>
         </Link>
         <div className="hidden items-center gap-4 text-sm text-gray-300 md:flex">
           <Link href="#paketler" className="transition hover:text-white">
@@ -737,7 +745,7 @@ function HeroSection({
           </div>
         </div>
 
-        <div className="w-full max-w-[420px]">
+        <div className="w-full max-w-[580px] sm:max-w-[600px]">
           <PhoneShowcaseSlider />
         </div>
       </div>
@@ -756,8 +764,8 @@ function PhoneShowcaseSlider() {
       },
       {
         id: "supplement",
-        label: "Supplement Planı",
-        description: "Hedeflerine uygun supplement planını kullanım zamanlarına göre düzenli hatırlatmalarla gör.",
+        label: "Beslenme Planlaması",
+        description: "Hedeflerine uygun beslenme planını kullanım zamanlarına göre düzenli hatırlatmalarla gör.",
         screenSrc: "/hero-slider/screen-supplement.png",
       },
       {
@@ -813,9 +821,9 @@ function PhoneShowcaseSlider() {
 
   return (
     <div className="relative mx-auto flex w-full flex-col items-center">
-      <div className="absolute -top-28 bottom-10 left-1/2 -z-10 aspect-square w-[420px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_60%,transparent_100%)] blur-xl lg:-top-32 lg:w-[520px]" />
-      <div className="relative w-full max-w-[360px] sm:max-w-[380px] lg:max-w-[420px]">
-        <div className="relative aspect-[570/748]">
+      <div className="absolute -top-28 bottom-10 left-1/2 -z-10 aspect-square w-[580px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_60%,transparent_100%)] blur-xl lg:-top-32 lg:w-[680px]" />
+      <div className="relative w-full max-w-[560px] sm:max-w-[580px] lg:max-w-[600px]">
+        <div className="relative aspect-[570/815]">
           <div className="absolute left-[22.5%] right-[22.5%] top-[6.5%] bottom-[7.5%] overflow-hidden rounded-[38px] bg-slate-950/80 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
             <div
               className="flex h-full w-full transition-transform duration-700 ease-out"
@@ -828,7 +836,7 @@ function PhoneShowcaseSlider() {
                     alt={slide.label}
                     fill
                     priority={slide.id === activeSlide.id}
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
               ))}
@@ -893,29 +901,39 @@ function PhoneShowcaseSlider() {
 }
 
 function SocialProofHighlight() {
-  const transformationIcons = ["💪", "🔥", "🏅", "⚡"]
+  const userAvatars = [
+    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop&crop=faces",
+    "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=200&h=200&fit=crop&crop=faces",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
+  ]
 
   return (
-    <div className="inline-flex items-center gap-4 rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-lg">
-      <div className="flex items-center -space-x-3">
-        {transformationIcons.map((icon, index) => (
-          <div
-            key={`transformation-icon-${icon}-${index}`}
-            className="flex h-16 w-12 items-center justify-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#2d2e34,#1e1f23)] text-lg shadow-inner"
-            style={{ zIndex: transformationIcons.length - index }}
-          >
-            {icon}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-3">
+    <div className="inline-flex flex-col md:flex-row items-center gap-4 rounded-3xl border border-white/10 bg-white/5 px-4 py-4 shadow-lg">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center -space-x-3">
+          {userAvatars.map((avatar, index) => (
+            <div
+              key={`transformation-avatar-${index}`}
+              className="relative flex h-16 w-12 items-center justify-center rounded-xl border-2 border-white/20 bg-[linear-gradient(135deg,#2d2e34,#1e1f23)] shadow-inner overflow-hidden"
+              style={{ zIndex: userAvatars.length - index }}
+            >
+              <Image
+                src={avatar}
+                alt={`Kullanıcı ${index + 1}`}
+                fill
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
         <div className="flex h-16 min-w-[72px] items-center justify-center rounded-2xl bg-red-600 px-4 text-lg font-semibold text-white shadow-lg">
           1500+
         </div>
-        <p className="max-w-xs text-xs leading-snug text-gray-200">
-          Dönüşüm hikayelerinden ilham al, sen de kendi hedefini gerçekleştiren 1500+ danışana katıl.
-        </p>
       </div>
+      <p className="text-left text-xs leading-relaxed text-gray-200 max-w-xs md:max-w-xs">
+        Dönüşüm hikayelerinden ilham al, sen de kendi hedefini gerçekleştiren 1500+ danışana katıl.
+      </p>
     </div>
   )
 }
@@ -991,7 +1009,7 @@ function PackageGrid({
     <div
       id="paketler"
       className={cn(
-        "mx-auto grid w-full max-w-6xl place-items-stretch gap-6",
+        "mx-auto grid w-full max-w-7xl place-items-stretch gap-6",
         "sm:grid-cols-2",
         "lg:grid-cols-3",
         packages.length >= 4 && "2xl:grid-cols-4",
@@ -1018,14 +1036,6 @@ function PackageGrid({
               </span>
             )}
             <CardHeader className="space-y-4 pb-4 text-center">
-              <div
-                className={cn(
-                  "mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg",
-                  pkg.themeColor ?? "bg-primary",
-                )}
-              >
-                <Icon className="h-7 w-7" />
-              </div>
               <CardTitle className="text-2xl font-semibold text-slate-900">{pkg.name}</CardTitle>
               {pkg.headline && <CardDescription className="text-base text-slate-600">{pkg.headline}</CardDescription>}
               <div className="space-y-1 text-slate-900">
@@ -1076,7 +1086,7 @@ function RecipeCard({
   return (
     <Card
       className={cn(
-        "flex h-full flex-col overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(45,46,52,0.95),rgba(24,25,28,0.9))] backdrop-blur transition-colors",
+        "flex h-full flex-col overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(45,46,52,0.95),rgba(24,25,28,0.9))] backdrop-blur transition-colors !p-0",
         accent && "border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(31,32,38,0.95))]",
         className,
       )}
@@ -1090,7 +1100,7 @@ function RecipeCard({
           backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0) 30%, rgba(15,23,42,0.85) 100%), url(${recipe.image})`,
         }}
       />
-      <CardHeader className={cn("space-y-3", compact ? "pb-4" : "")}>
+      <CardHeader className={cn("space-y-3 pt-2", compact ? "pb-4" : "")}>
         <Badge
           variant="outline"
           className={cn(
@@ -1105,7 +1115,7 @@ function RecipeCard({
           Dengeli bir öğün için {recipe.protein}g protein ve {recipe.calories} kalori.
         </CardDescription>
       </CardHeader>
-      <CardContent className={cn("mt-auto space-y-4", compact ? "pb-6" : "")}>
+      <CardContent className={cn("mt-auto space-y-4 pb-6 sm:pb-4", compact ? "pb-6" : "")}>
         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-100">
           <span className="flex items-center gap-1 text-amber-300">
             <Star className="h-4 w-4" />

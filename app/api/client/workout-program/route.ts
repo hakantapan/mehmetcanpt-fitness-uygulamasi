@@ -4,6 +4,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import { getActivePackagePurchase } from '@/lib/subscription'
 
+export const dynamic = 'force-dynamic'
+
 type ProgramDayExercise = {
   id?: string
   exerciseTemplateId?: string

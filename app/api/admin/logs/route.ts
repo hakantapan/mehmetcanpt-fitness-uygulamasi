@@ -4,6 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import type { LogLevel } from "@prisma/client"
 
+export const dynamic = "force-dynamic"
+
 const MAX_PAGE_SIZE = 100
 
 export async function GET(request: NextRequest) {

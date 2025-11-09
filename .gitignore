@@ -18,6 +18,7 @@ yarn-error.log*
 
 # env files
 .env*
+.env.deploy
 
 # vercel
 .vercel
@@ -26,3 +27,19 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /lib/generated/prisma
+
+# backups
+backups/
+.backup-restore/
+
+# PWA / Service Worker
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/fallback-*.js
+/public/fallback-*.js.map
+
+# macOS
+.DS_Store
+**/.DS_Store

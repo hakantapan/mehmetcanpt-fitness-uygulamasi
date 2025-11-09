@@ -30,6 +30,8 @@ import {
   Shield,
   LogOut,
   Package,
+  Save,
+  Rocket,
 } from "lucide-react"
 
 const menuItems = [
@@ -41,6 +43,8 @@ const menuItems = [
   { href: "/admin/paketler", icon: Package, label: "Paketler" },
   { href: "/admin/odeme-ayarlari", icon: CreditCard, label: "Ödeme Ayarları" },
   { href: "/admin/mail-ayarlari", icon: Settings, label: "Mail Ayarları" },
+  { href: "/admin/deployment", icon: Rocket, label: "Deployment" },
+  { href: "/admin/backup", icon: Save, label: "Yedekleme" },
 ]
 
 interface AdminLayoutProps {
@@ -128,7 +132,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <DropdownMenuLabel>Hesabım</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/ayarlar" className="flex items-center">
+                  <Link href="/admin/ayarlar" className="flex items-center">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Ayarlar</span>
                   </Link>

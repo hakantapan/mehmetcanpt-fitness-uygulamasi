@@ -52,7 +52,10 @@ import {
   Menu,
   LogOut,
   Shield,
+  CheckCircle2,
 } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+import { tr } from "date-fns/locale"
 
 // Role-based navigation configurations
 const navigationConfig = {
@@ -96,7 +99,18 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const [profile, setProfile] = useState<{ name: string; email: string; avatar: string | null } | null>(null)
+  const [notificationCount, setNotificationCount] = useState(0)
+  const [notifications, setNotifications] = useState<Array<{
+    id: string
+    type: 'question' | 'workout' | 'nutrition' | 'supplement'
+    title: string
+    message: string
+    date: string
+    link: string
+  }>>([])
+  const [notificationsLoading, setNotificationsLoading] = useState(false)
 
   const userRole = session?.user?.role as keyof typeof navigationConfig || 'CLIENT'
   const navigation = navigationConfig[userRole] || navigationConfig.CLIENT
@@ -166,6 +180,59 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
       }
     }
 
+    const fetchNotificationCount = async () => {
+      try {
+        if (userRole === 'CLIENT') {
+          const response = await fetch('/api/client/notifications', { cache: 'no-store' })
+          if (response.ok) {
+            const data = await response.json()
+            setNotificationCount(data?.count ?? 0)
+            if (showNotifications) {
+              setNotifications(data?.notifications ?? [])
+            }
+          } else {
+            // Fallback: eski yöntem
+            const fallbackResponse = await fetch('/api/client/questions', { cache: 'no-store' })
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json()
+              const answeredCount = fallbackData?.stats?.answered ?? 0
+              setNotificationCount(answeredCount)
+            }
+          }
+        } else if (userRole === 'TRAINER') {
+          const response = await fetch('/api/trainer/questions?summary=1', { cache: 'no-store' })
+          if (response.ok) {
+            const data = await response.json()
+            const pending = Number(data?.stats?.pending ?? 0)
+            const fresh = Number(data?.stats?.new ?? 0)
+            setNotificationCount(pending + fresh)
+          }
+        } else if (userRole === 'ADMIN') {
+          // Admin için şimdilik 0, gerekirse log sayısı eklenebilir
+          setNotificationCount(0)
+        }
+      } catch (error) {
+        console.error('Mobile notification count fetch error:', error)
+      }
+    }
+
+    const fetchNotifications = async () => {
+      if (userRole !== 'CLIENT') return
+      
+      try {
+        setNotificationsLoading(true)
+        const response = await fetch('/api/client/notifications', { cache: 'no-store' })
+        if (response.ok) {
+          const data = await response.json()
+          setNotifications(data?.notifications ?? [])
+        }
+      } catch (error) {
+        console.error('Mobile notifications fetch error:', error)
+      } finally {
+        setNotificationsLoading(false)
+      }
+    }
+
     const handleTrainerUpdate = (event: Event) => {
       const detail = (event as CustomEvent<{ trainer?: { firstName?: string; lastName?: string; avatar?: string | null } }>).detail
       const trainerDetail = detail?.trainer
@@ -193,16 +260,49 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
     }
 
     void fetchProfile()
+    void fetchNotificationCount()
+
+    // Bildirim sayısını periyodik olarak güncelle (her 30 saniyede bir)
+    const notificationInterval = setInterval(() => {
+      void fetchNotificationCount()
+    }, 30000)
+
+    // Bildirim paneli açıldığında bildirimleri yükle
+    if (showNotifications && userRole === 'CLIENT') {
+      void fetchNotifications()
+    }
 
     window.addEventListener('trainer-profile-updated', handleTrainerUpdate as EventListener)
     window.addEventListener('user-profile-updated', handleUserUpdate as EventListener)
 
     return () => {
       isCancelled = true
+      clearInterval(notificationInterval)
       window.removeEventListener('trainer-profile-updated', handleTrainerUpdate as EventListener)
       window.removeEventListener('user-profile-updated', handleUserUpdate as EventListener)
     }
-  }, [session?.user?.email, session?.user?.image, session?.user?.name, userRole])
+  }, [session?.user?.email, session?.user?.image, session?.user?.name, userRole, showNotifications])
+
+  // Bildirim paneli açıldığında bildirimleri yükle
+  useEffect(() => {
+    if (showNotifications && userRole === 'CLIENT' && notifications.length === 0 && !notificationsLoading) {
+      const fetchNotifications = async () => {
+        try {
+          setNotificationsLoading(true)
+          const response = await fetch('/api/client/notifications', { cache: 'no-store' })
+          if (response.ok) {
+            const data = await response.json()
+            setNotifications(data?.notifications ?? [])
+          }
+        } catch (error) {
+          console.error('Mobile notifications fetch error:', error)
+        } finally {
+          setNotificationsLoading(false)
+        }
+      }
+      void fetchNotifications()
+    }
+  }, [showNotifications, userRole, notifications.length, notificationsLoading])
 
   const displayName = useMemo(() => {
     const name = profile?.name || session?.user?.name || 'Kullanıcı'
@@ -237,7 +337,7 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
       {...swipeHandlers}
     >
       {/* Mobile Status Bar Simulation - Only on mobile */}
-      <div className="h-6 bg-gradient-to-r from-rose-400 to-rose-600 sm:hidden"></div>
+      <div className="h-6 bg-[#DC1D24] sm:hidden"></div>
       
       {/* Top Header - Mobile optimized */}
       <div
@@ -253,32 +353,129 @@ export function MobileAppLayout({ children }: MobileAppLayoutProps) {
             <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="hidden sm:block">
-            <h1 className="font-bold text-gray-800 text-lg">Mehmetcanpt Uzaktan Eğitim</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-gray-800 text-lg">Mehmetcanpt Uzaktan Eğitim</h1>
+              <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded font-medium">BETA</span>
+            </div>
             <p className="text-sm text-gray-500 capitalize">{userRole.toLowerCase()} Panel</p>
           </div>
           <div className="sm:hidden">
-            <h1 className="font-bold text-gray-800 text-base">Mehmetcanpt Uzaktan Eğitim</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-gray-800 text-base">Mehmetcanpt Uzaktan Eğitim</h1>
+              <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded font-medium">BETA</span>
+            </div>
           </div>
         </div>
         
         <div className="flex items-center gap-1 sm:gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative p-2"
-            style={{ background: 'transparent', color: '#6b7280' }}
-          >
-            <Bell
-              className="w-4 h-4 sm:w-5 sm:h-5"
-              style={{ color: '#6b7280' }}
-            />
-            <Badge
-              className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 p-0 text-xs"
-              style={{ background: '#dc2626', color: '#ffffff' }}
+          <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="relative p-2"
+                style={{ background: 'transparent', color: '#6b7280' }}
+              >
+                <Bell
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  style={{ color: '#6b7280' }}
+                />
+                {notificationCount > 0 && (
+                  <Badge
+                    className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 p-0 text-xs flex items-center justify-center"
+                    style={{ background: '#dc2626', color: '#ffffff' }}
+                  >
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-full sm:w-96 overflow-y-auto"
+              style={{ background: '#ffffff', color: '#374151' }}
             >
-              3
-            </Badge>
-          </Button>
+              <SheetHeader className="pb-4 border-b">
+                <SheetTitle className="text-lg font-bold" style={{ color: '#1f2937' }}>
+                  Bildirimler
+                </SheetTitle>
+                <SheetDescription style={{ color: '#6b7280' }}>
+                  {notificationCount > 0 ? `${notificationCount} yeni bildirim` : 'Bildirim yok'}
+                </SheetDescription>
+              </SheetHeader>
+              
+              <div className="mt-4 space-y-2">
+                {notificationsLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Bildirimler yükleniyor...</p>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Bell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz bildirim yok</p>
+                  </div>
+                ) : (
+                  notifications.map((notification) => {
+                    const getIcon = () => {
+                      switch (notification.type) {
+                        case 'question':
+                          return <MessageCircle className="w-5 h-5 text-blue-500" />
+                        case 'workout':
+                          return <Dumbbell className="w-5 h-5 text-red-500" />
+                        case 'nutrition':
+                          return <Apple className="w-5 h-5 text-green-500" />
+                        case 'supplement':
+                          return <Pill className="w-5 h-5 text-orange-500" />
+                        default:
+                          return <Bell className="w-5 h-5 text-gray-500" />
+                      }
+                    }
+
+                    const getColor = () => {
+                      switch (notification.type) {
+                        case 'question':
+                          return 'bg-blue-50 border-blue-200'
+                        case 'workout':
+                          return 'bg-red-50 border-red-200'
+                        case 'nutrition':
+                          return 'bg-green-50 border-green-200'
+                        case 'supplement':
+                          return 'bg-orange-50 border-orange-200'
+                        default:
+                          return 'bg-gray-50 border-gray-200'
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={notification.id}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${getColor()}`}
+                        onClick={() => {
+                          setShowNotifications(false)
+                          router.push(notification.link)
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5">{getIcon()}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm" style={{ color: '#1f2937' }}>
+                              {notification.title}
+                            </p>
+                            <p className="text-xs mt-1 truncate" style={{ color: '#6b7280' }}>
+                              {notification.message}
+                            </p>
+                            <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
+                              {formatDistanceToNow(new Date(notification.date), { addSuffix: true, locale: tr })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

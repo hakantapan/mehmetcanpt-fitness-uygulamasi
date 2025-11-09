@@ -36,19 +36,33 @@ export default function MailSettingsPage() {
   const [form, setForm] = useState<MailSettingForm>(INITIAL_FORM)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [sendingTestEmail, setSendingTestEmail] = useState(false)
+  const [testEmailAddress, setTestEmailAddress] = useState("")
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [lastTested, setLastTested] = useState<string | null>(null)
 
   useEffect(() => {
+    let isMounted = true
+    
     const fetchSettings = async () => {
       try {
         setLoading(true)
-        const response = await fetch("/api/admin/mail-settings", { cache: "no-store" })
-        if (!response.ok) {
-          const data = await response.json().catch(() => null)
+        const [settingsResponse, profileResponse] = await Promise.all([
+          fetch("/api/admin/mail-settings", { cache: "no-store" }),
+          fetch("/api/user/profile", { cache: "no-store" }).catch(() => null),
+        ])
+        
+        if (!isMounted) return
+        
+        if (!settingsResponse.ok) {
+          const data = await settingsResponse.json().catch(() => null)
           throw new Error(data?.error || "Mail ayarları yüklenemedi")
         }
 
-        const data = await response.json()
+        const data = await settingsResponse.json()
+        if (!isMounted) return
+        
         if (data.setting) {
           const passwordValue = data.setting.password === '********' ? '' : data.setting.password ?? ''
           setForm({
@@ -61,21 +75,42 @@ export default function MailSettingsPage() {
             fromEmail: data.setting.fromEmail ?? "",
             replyTo: data.setting.replyTo ?? "",
           })
-          setLastUpdated(data.setting.updatedAt ?? data.setting.lastTested ?? null)
+          setLastUpdated(data.setting.updatedAt ?? null)
+          setLastTested(data.setting.lastTested ?? null)
+        }
+
+        // Admin kullanıcının e-postasını test e-postası alanına otomatik doldur
+        try {
+          if (profileResponse && profileResponse.ok) {
+            const profileData = await profileResponse.json().catch(() => null)
+            if (profileData?.email && isMounted) {
+              setTestEmailAddress(profileData.email)
+            }
+          }
+        } catch (profileError) {
+          // Profil yüklenemezse sessizce geç
+          console.log("Profil yüklenemedi:", profileError)
         }
       } catch (error) {
-        console.error(error)
+        if (!isMounted) return
+        console.error("Mail ayarları yükleme hatası:", error)
         toast({
           title: "Hata",
           description: (error as Error).message,
           variant: "destructive",
         })
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     void fetchSettings()
+    
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const handleChange = (field: keyof MailSettingForm, value: string | boolean) => {
@@ -86,41 +121,185 @@ export default function MailSettingsPage() {
   }
 
   const handleSubmit = async (testConnection = false) => {
+    console.log("handleSubmit çağrıldı, testConnection:", testConnection)
+    
+    // Test için minimum gerekli alanları kontrol et
+    if (testConnection && (!form.host || !form.port || !form.fromEmail)) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Test için SMTP sunucusu, port ve gönderen e-posta alanları doldurulmalıdır.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Kaydet için minimum gerekli alanları kontrol et
+    if (!testConnection && (!form.host || !form.port || !form.fromName || !form.fromEmail)) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Host, port, gönderen adı ve e-posta alanları zorunludur.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      setSaving(true)
+      if (testConnection) {
+        setTesting(true)
+      } else {
+        setSaving(true)
+      }
+      
+      const requestBody = {
+        ...form,
+        port: Number(form.port),
+        test: testConnection,
+      }
+      
+      console.log("API isteği gönderiliyor:", { testConnection, body: { ...requestBody, password: requestBody.password ? "***" : "" } })
+      
       const response = await fetch("/api/admin/mail-settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          port: Number(form.port),
-          test: testConnection,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
-      const data = await response.json().catch(() => null)
+      console.log("API yanıtı:", { status: response.status, ok: response.ok, statusText: response.statusText })
+
+      const data = await response.json().catch((err) => {
+        console.error("JSON parse hatası:", err)
+        return null
+      })
+
+      console.log("API yanıt verisi:", JSON.stringify(data, null, 2))
 
       if (!response.ok) {
-        throw new Error(data?.error || "Ayarlar kaydedilemedi")
+        throw new Error(data?.error || `HTTP ${response.status}: Ayarlar kaydedilemedi`)
       }
 
-      toast({
-        title: "Ayarlar kaydedildi",
-        description:
-          data?.warning ?? (testConnection ? "SMTP bağlantı testi başarıyla tamamlandı." : "Mail ayarları güncellendi."),
-      })
-
-      if (data?.updatedAt) {
-        setLastUpdated(data.updatedAt)
+      // Test bağlantısı için özel işleme
+      if (testConnection) {
+        if (data?.testResult?.success) {
+          toast({
+            title: "Test Başarılı",
+            description: data.testResult.message || "SMTP bağlantı testi başarıyla tamamlandı.",
+          })
+          if (data.testResult.testedAt) {
+            setLastTested(data.testResult.testedAt)
+          }
+        } else if (data?.error || data?.warning) {
+          toast({
+            title: data?.error ? "Test Başarısız" : "Uyarı",
+            description: data?.error || data?.warning,
+            variant: data?.error ? "destructive" : "default",
+          })
+        } else {
+          toast({
+            title: "Test Tamamlandı",
+            description: "SMTP bağlantı testi tamamlandı.",
+          })
+        }
+      } else {
+        // Kaydetme için işleme
+        if (data?.error || data?.warning) {
+          toast({
+            title: data?.error ? "Hata" : "Uyarı",
+            description: data?.error || data?.warning,
+            variant: data?.error ? "destructive" : "default",
+          })
+        } else {
+          toast({
+            title: "Başarılı",
+            description: "Mail ayarları güncellendi.",
+          })
+        }
+        if (data?.updatedAt) {
+          setLastUpdated(data.updatedAt)
+        }
       }
     } catch (error) {
+      console.error("handleSubmit hatası:", error)
+      toast({
+        title: "Hata",
+        description: (error as Error).message || "Beklenmeyen bir hata oluştu",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+      setTesting(false)
+    }
+  }
+
+  const handleSendTestEmail = async () => {
+    console.log("[handleSendTestEmail] Called with email:", testEmailAddress)
+    
+    if (!testEmailAddress || !testEmailAddress.includes("@")) {
+      toast({
+        title: "Geçersiz E-posta",
+        description: "Lütfen geçerli bir e-posta adresi giriniz.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setSendingTestEmail(true)
+      console.log("[handleSendTestEmail] Sending request to /api/admin/mail-settings/test")
+      
+      const response = await fetch("/api/admin/mail-settings/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: testEmailAddress }),
+      })
+
+      console.log("[handleSendTestEmail] Response status:", response.status, response.ok)
+
+      const data = await response.json().catch((err) => {
+        console.error("[handleSendTestEmail] JSON parse error:", err)
+        return null
+      })
+
+      console.log("[handleSendTestEmail] Response data:", JSON.stringify(data, null, 2))
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Test e-postası gönderilemedi")
+      }
+
+      // Eğer warning varsa veya rejected varsa uyarı göster
+      if (data?.warning || (data?.rejected && data.rejected.length > 0)) {
+        toast({
+          title: "Uyarı",
+          description: data?.warning || data?.message || `E-posta gönderildi ancak bazı alıcılar reddedildi: ${data.rejected?.join(", ")}`,
+          variant: "default",
+        })
+      } else if (data?.success === false) {
+        toast({
+          title: "Uyarı",
+          description: data?.message || data?.warning || "E-posta gönderildi ancak beklenmeyen bir durum oluştu.",
+          variant: "default",
+        })
+      } else {
+        toast({
+          title: "Başarılı",
+          description: data?.message || `Test e-postası ${testEmailAddress} adresine gönderildi.`,
+        })
+      }
+      
+      // Eğer accepted varsa konsola yazdır
+      if (data?.accepted && data.accepted.length > 0) {
+        console.log("[handleSendTestEmail] Mail accepted by SMTP server for:", data.accepted)
+      }
+      
+      setTestEmailAddress("")
+    } catch (error) {
+      console.error("[handleSendTestEmail] Error:", error)
       toast({
         title: "Hata",
         description: (error as Error).message,
         variant: "destructive",
       })
     } finally {
-      setSaving(false)
+      setSendingTestEmail(false)
     }
   }
 
@@ -154,9 +333,24 @@ export default function MailSettingsPage() {
                     <Label htmlFor="host">SMTP Sunucusu</Label>
                     <Input
                       id="host"
+                      placeholder="smtp.gmail.com"
                       value={form.host}
-                      onChange={(event) => handleChange("host", event.target.value)}
+                      onChange={(event) => {
+                        // Kullanıcı ssl:// veya tls:// yazarsa uyar
+                        const value = event.target.value
+                        if (value.includes("ssl://") || value.includes("tls://")) {
+                          toast({
+                            title: "Uyarı",
+                            description: "Host alanına sadece domain adresini girin (örn: smtp.gmail.com). SSL/TLS için 'Güvenli bağlantı' seçeneğini kullanın.",
+                            variant: "default",
+                          })
+                        }
+                        handleChange("host", value.replace(/^(ssl|tls):\/\//i, "").replace(/^\/\//, ""))
+                      }}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Sadece domain adresini girin (örn: smtp.gmail.com). SSL/TLS için "Güvenli bağlantı" seçeneğini kullanın.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="port">Port</Label>
@@ -164,9 +358,13 @@ export default function MailSettingsPage() {
                       id="port"
                       type="number"
                       min={1}
+                      placeholder="587"
                       value={form.port}
                       onChange={(event) => handleChange("port", event.target.value)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Genellikle 587 (TLS) veya 465 (SSL) kullanılır.
+                    </p>
                   </div>
                 </div>
 
@@ -226,19 +424,55 @@ export default function MailSettingsPage() {
                   />
                 </div>
 
-                {lastUpdated ? (
-                  <p className="text-xs text-muted-foreground">
-                    Son güncelleme: {new Date(lastUpdated).toLocaleString("tr-TR")}
-                  </p>
-                ) : null}
+                <div className="space-y-1">
+                  {lastUpdated ? (
+                    <p className="text-xs text-muted-foreground">
+                      Son güncelleme: {new Date(lastUpdated).toLocaleString("tr-TR")}
+                    </p>
+                  ) : null}
+                  {lastTested ? (
+                    <p className="text-xs text-green-600 font-medium">
+                      ✓ Son test: {new Date(lastTested).toLocaleString("tr-TR")} - Başarılı
+                    </p>
+                  ) : null}
+                </div>
 
-                <div className="flex items-center gap-2">
-                  <Button disabled={saving} onClick={() => handleSubmit(false)}>
-                    {saving ? "Kaydediliyor..." : "Kaydet"}
-                  </Button>
-                  <Button variant="outline" disabled={saving} onClick={() => handleSubmit(true)}>
-                    Bağlantıyı Test Et
-                  </Button>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Button disabled={saving || testing || sendingTestEmail} onClick={() => handleSubmit(false)}>
+                      {saving ? "Kaydediliyor..." : "Kaydet"}
+                    </Button>
+                    <Button variant="outline" disabled={saving || testing || sendingTestEmail} onClick={() => handleSubmit(true)}>
+                      {testing ? "Test ediliyor..." : "Bağlantıyı Test Et"}
+                    </Button>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <Label htmlFor="testEmail" className="text-sm font-medium mb-2 block">
+                      Test E-postası Gönder
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="testEmail"
+                        type="email"
+                        placeholder="test@example.com"
+                        value={testEmailAddress}
+                        onChange={(e) => setTestEmailAddress(e.target.value)}
+                        disabled={saving || testing || sendingTestEmail}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="secondary"
+                        disabled={saving || testing || sendingTestEmail || !testEmailAddress}
+                        onClick={handleSendTestEmail}
+                      >
+                        {sendingTestEmail ? "Gönderiliyor..." : "Gönder"}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Test e-postası göndermek için e-posta adresini girin ve Gönder butonuna tıklayın.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

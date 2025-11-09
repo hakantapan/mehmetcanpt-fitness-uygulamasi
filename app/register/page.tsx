@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2 } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const selectedPackageSlug = searchParams.get('paket')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -82,11 +84,14 @@ export default function RegisterPage() {
 
       // Başarılı kayıt sonrası email doğrulama mesajı göster
       if (data.needsEmailVerification) {
-        alert(`Kayıt başarılı! Email doğrulama bağlantısı console'da gösterildi.\n\nGeliştirme ortamında email gönderimi yapılmıyor, bu yüzden doğrulama linki console'da görüntüleniyor.\n\nEmail doğrulamadan sonra giriş yapabilirsiniz.`)
-        // Development için doğrulama URL'sini göster
+        const message = `Kayıt başarılı! E-posta adresinize doğrulama bağlantısı gönderildi.\n\nLütfen e-posta gelen kutunuzu kontrol edin ve e-posta adresinizi doğrulayın.\n\nE-posta doğrulamadan sonra giriş yapabilirsiniz.`
+        
+        // Development/test için console'da da göster
         if (data.verificationUrl) {
-          console.log('Email Doğrulama Linki:', data.verificationUrl)
+          console.log('📧 Email Doğrulama Linki:', data.verificationUrl)
         }
+        
+        alert(message)
       }
       
       if (selectedPackageSlug) {
@@ -145,7 +150,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -161,7 +166,7 @@ export default function RegisterPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -169,34 +174,62 @@ export default function RegisterPage() {
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Şifre <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#DC1D24] focus:outline-none"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Şifre Tekrar <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#DC1D24] focus:outline-none"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -217,7 +250,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -233,7 +266,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -247,7 +280,7 @@ export default function RegisterPage() {
                     value={formData.gender}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   >
                     <option value="">Cinsiyet seçin</option>
                     <option value="Erkek">Erkek</option>
@@ -268,7 +301,7 @@ export default function RegisterPage() {
                     value={formData.age}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
               </div>
@@ -290,7 +323,7 @@ export default function RegisterPage() {
                     value={formData.height}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -306,7 +339,7 @@ export default function RegisterPage() {
                     value={formData.weight}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
                 
@@ -322,7 +355,7 @@ export default function RegisterPage() {
                     value={formData.targetWeight}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   />
                 </div>
               </div>
@@ -342,7 +375,7 @@ export default function RegisterPage() {
                     value={formData.activityLevel}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   >
                     <option value="Düşük">Düşük (Az veya hiç egzersiz yapmıyorum)</option>
                     <option value="Orta">Orta (Haftada 1-3 gün egzersiz yapıyorum)</option>
@@ -360,7 +393,7 @@ export default function RegisterPage() {
                     value={formData.fitnessGoal}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#DC1D24] focus:border-[#DC1D24]"
                   >
                     <option value="Kilo Verme">Kilo Verme</option>
                     <option value="Kilo Alma">Kilo Alma</option>
@@ -375,7 +408,7 @@ export default function RegisterPage() {
           <div className="flex flex-col space-y-4 mt-6">
             <button 
               type="submit" 
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#DC1D24] hover:bg-[#B8151C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DC1D24] disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -392,7 +425,7 @@ export default function RegisterPage() {
               Zaten hesabınız var mı?{' '}
               <Link 
                 href="/login" 
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                className="text-[#DC1D24] hover:text-[#B8151C] dark:text-[#DC1D24] dark:hover:text-[#E82E35] font-medium"
               >
                 Giriş yapın
               </Link>
@@ -401,5 +434,13 @@ export default function RegisterPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>}>
+      <RegisterForm />
+    </Suspense>
   )
 }

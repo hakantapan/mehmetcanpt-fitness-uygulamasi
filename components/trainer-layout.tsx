@@ -138,7 +138,7 @@ export default function TrainerLayout({ children }: TrainerLayoutProps) {
           <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <h1 className="font-semibold text-foreground">Eğitmen Paneli</h1>
+          <h1 className="font-semibold text-foreground">Mehmetcan PT Eğitmen Paneli</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="relative">
@@ -168,7 +168,10 @@ export default function TrainerLayout({ children }: TrainerLayoutProps) {
                 <Dumbbell className="h-6 w-6 text-sidebar-primary-foreground" />
               </div>
               <div>
-                <h2 className="font-bold text-sidebar-foreground">FitTrainer</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-sidebar-foreground">Mehmetcan PT</h2>
+                  <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0.5">BETA</Badge>
+                </div>
                 <p className="text-sm text-muted-foreground">Eğitmen Paneli</p>
               </div>
             </div>

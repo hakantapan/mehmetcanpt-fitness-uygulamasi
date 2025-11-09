@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import type { PackageStatus, Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const genderLabels: Record<string, string> = {
   Erkek: 'Erkek',
   Kadin: 'Kadın',

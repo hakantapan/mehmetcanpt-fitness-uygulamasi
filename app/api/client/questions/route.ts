@@ -64,7 +64,18 @@ export async function GET() {
         : null
     }))
 
-    return NextResponse.json({ questions: data })
+    // İstatistikleri hesapla
+    const answeredCount = questions.filter(q => q.answer && q.status === 'Cevaplanmis').length
+    const pendingCount = questions.filter(q => !q.answer && (q.status === 'Yeni' || q.status === 'Beklemede')).length
+
+    return NextResponse.json({ 
+      questions: data,
+      stats: {
+        answered: answeredCount,
+        pending: pendingCount,
+        total: questions.length
+      }
+    })
   } catch (error) {
     console.error('Client questions fetch error:', error)
     return NextResponse.json({ error: 'Sorular alınamadı' }, { status: 500 })

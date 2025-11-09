@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { ensureMailScheduler } from "@/lib/scheduler"
 import { subMonths, startOfMonth } from "date-fns"
 
+export const dynamic = "force-dynamic"
+
 ensureMailScheduler()
 
 type StatCard = {

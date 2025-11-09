@@ -305,6 +305,9 @@ export async function PATCH(request: NextRequest) {
 
     const updateData: Prisma.UserUpdateInput = {}
     const profileUpdates: Prisma.UserProfileUpdateInput = {}
+    let pendingFirstName: string | null = null
+    let pendingLastName: string | null = null
+    let pendingPhone: string | null = null
 
     if (typeof body.status === "string") {
       const mappedStatus = STATUS_MAP[body.status]
@@ -324,13 +327,21 @@ export async function PATCH(request: NextRequest) {
 
     if (typeof body.name === "string" && body.name.trim()) {
       const [firstName, ...rest] = body.name.trim().split(/\s+/)
+      pendingFirstName = firstName
       profileUpdates.firstName = firstName
-      profileUpdates.lastName = rest.join(" ") || null
+      const joinedLastName = rest.join(" ").trim()
+      if (joinedLastName.length > 0) {
+        pendingLastName = joinedLastName
+        profileUpdates.lastName = joinedLastName
+      } else {
+        pendingLastName = null
+      }
     }
 
     if (typeof body.phone === "string") {
       const phone = body.phone.trim()
-      profileUpdates.phone = phone.length ? phone : null
+      pendingPhone = phone.length ? phone : null
+      profileUpdates.phone = pendingPhone
     }
 
     if (typeof body.password === "string" && body.password.trim().length > 0) {
@@ -354,17 +365,19 @@ export async function PATCH(request: NextRequest) {
         }
       } else {
         const firstName =
-          typeof profileUpdates.firstName === "string" && profileUpdates.firstName.trim()
-            ? profileUpdates.firstName.trim()
+          typeof pendingFirstName === "string" && pendingFirstName.trim().length > 0
+            ? pendingFirstName.trim()
             : existingUser.email.split("@")[0]
         const lastName =
-          typeof profileUpdates.lastName === "string" ? profileUpdates.lastName : existingUser.profile?.lastName ?? null
+          typeof pendingLastName === "string" && pendingLastName.trim().length > 0
+            ? pendingLastName.trim()
+            : existingUser.email.split("@")[0]
 
         updateData.profile = {
           create: {
             firstName,
             lastName,
-            phone: typeof profileUpdates.phone === "string" ? profileUpdates.phone : null,
+            phone: pendingPhone,
           },
         }
       }
@@ -397,16 +410,41 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı ID gerekli" }, { status: 400 })
     }
 
-    await prisma.user.update({
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await prisma.user.findUnique({
       where: { id },
-      data: {
-        isActive: false,
+      include: {
+        profile: true,
       },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
+    }
+
+    // Admin kullanıcılarını silmeyi engelle
+    if (user.role === "ADMIN") {
+      return NextResponse.json({ error: "Admin kullanıcıları silinemez" }, { status: 403 })
+    }
+
+    // Kullanıcıyı ve ilişkili verilerini cascade delete ile sil
+    // Prisma cascade delete ayarlarına göre ilişkili kayıtlar otomatik silinir
+    await prisma.user.delete({
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Admin users delete error:", error)
+    
+    // Foreign key constraint hatası kontrolü
+    if (error instanceof Error && error.message.includes("Foreign key constraint")) {
+      return NextResponse.json(
+        { error: "Bu kullanıcıya ait veriler bulunduğu için silinemiyor. Önce ilişkili verileri silin." },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json({ error: "İşlem sırasında bir hata oluştu" }, { status: 500 })
   }
 }

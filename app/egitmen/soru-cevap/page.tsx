@@ -282,8 +282,17 @@ export default function TrainerQAPage() {
       setAnswerText("")
       setSelectedQuestion(null)
       await fetchQuestions()
+      toast({
+        title: "Başarılı",
+        description: "Yanıt başarıyla gönderildi.",
+      })
     } catch (err) {
       console.error("Trainer question answer submit error:", err)
+      toast({
+        title: "Hata",
+        description: "Yanıt gönderilemedi. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
     } finally {
       setAnswerLoading(false)
     }

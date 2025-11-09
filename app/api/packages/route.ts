@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET() {
   try {
     const packages = await prisma.fitnessPackage.findMany({
@@ -10,6 +13,8 @@ export async function GET() {
         { createdAt: "asc" },
       ],
     })
+
+    console.log(`[Packages API] Found ${packages.length} active packages`)
 
     return NextResponse.json({
       packages: packages.map((pkg) => ({

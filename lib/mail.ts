@@ -122,7 +122,15 @@ async function getTransporter() {
 }
 
 export async function sendMail(options: SendMailOptions) {
+  console.log("[sendMail] Starting mail send process")
   const { transporter, config } = await getTransporter()
+  console.log("[sendMail] Transporter obtained, config:", {
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    fromEmail: config.fromEmail,
+    fromName: config.fromName,
+  })
 
   const mailOptions = {
     from: `${config.fromName} <${config.fromEmail}>`,
@@ -133,7 +141,25 @@ export async function sendMail(options: SendMailOptions) {
     replyTo: config.replyTo ?? undefined,
   }
 
-  return transporter.sendMail(mailOptions)
+  console.log("[sendMail] Sending mail with options:", {
+    from: mailOptions.from,
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+  })
+
+  try {
+    const result = await transporter.sendMail(mailOptions)
+    console.log("[sendMail] Mail sent successfully, result:", {
+      messageId: (result as any)?.messageId,
+      response: (result as any)?.response,
+      accepted: (result as any)?.accepted,
+      rejected: (result as any)?.rejected,
+    })
+    return result
+  } catch (error) {
+    console.error("[sendMail] Error sending mail:", error)
+    throw error
+  }
 }
 
 const MAIL_DEFAULT_SOURCE = "mail"
@@ -375,13 +401,14 @@ export async function sendPackageAssignedEmail(
   await safeSend({ to, ...template }, mergedMeta)
 }
 
-export async function testMailConnection() {
+export async function testMailConnection(): Promise<{ success: boolean; error?: string }> {
   try {
     const { transporter } = await getTransporter()
     await transporter.verify()
-    return true
+    return { success: true }
   } catch (error) {
     console.error("SMTP doğrulama hatası:", error)
-    return false
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return { success: false, error: errorMessage }
   }
 }

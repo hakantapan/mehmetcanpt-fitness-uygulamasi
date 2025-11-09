@@ -412,7 +412,7 @@ export default function PackagePurchasePage() {
 
   return (
     <ResponsiveLayout>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
         <div className="space-y-4 text-center">
           <Badge variant="outline" className="inline-flex items-center gap-2 text-xs uppercase tracking-wide">
             <Shield className="h-3.5 w-3.5 text-primary" />
@@ -436,7 +436,7 @@ export default function PackagePurchasePage() {
         ) : null}
 
         {currentStep === 1 ? (
-          <div className="space-y-6 pb-24 md:pb-0">
+          <div className="space-y-6 pb-32 lg:pb-0">
             {packagesError ? (
               <Alert variant="destructive">
                 <AlertTriangle className="h-5 w-5" />
@@ -444,9 +444,9 @@ export default function PackagePurchasePage() {
                 <AlertDescription>{packagesError}</AlertDescription>
               </Alert>
             ) : null}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {loadingPackages
-                ? Array.from({ length: 3 }).map((_, index) => (
+                ? Array.from({ length: 4 }).map((_, index) => (
                     <Card key={`package-skeleton-${index}`} className="p-6 space-y-4">
                       <div className="flex justify-center">
                         <Skeleton className="h-16 w-16 rounded-full" />
@@ -546,7 +546,7 @@ export default function PackagePurchasePage() {
                       )
                     })
                   : !packagesError ? (
-                    <Alert className="md:col-span-3">
+                    <Alert className="md:col-span-2 lg:col-span-4">
                       <AlertTriangle className="h-5 w-5" />
                       <AlertTitle>Paket bulunamadı</AlertTitle>
                       <AlertDescription>
@@ -556,7 +556,7 @@ export default function PackagePurchasePage() {
                   ) : null}
             </div>
 
-            <div className="sticky bottom-0 left-0 right-0 z-30 flex flex-col items-center gap-3 border-t bg-background/95 px-4 pb-4 pt-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 md:static md:flex-row md:justify-between md:border-transparent md:bg-transparent md:px-0 md:pb-0 md:pt-6 md:shadow-none">
+            <div className="fixed bottom-16 left-0 right-0 z-[60] flex flex-col items-center gap-3 border-t bg-background/95 px-4 pb-4 pt-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:sticky lg:bottom-0 lg:flex-row lg:justify-between lg:px-6 lg:pb-4 lg:pt-4">
               <div className="text-sm text-muted-foreground text-center md:text-left">
                 PayTR güvencesiyle kredi veya banka kartınızla güvenli ödeme yapabilirsiniz.
               </div>
@@ -575,7 +575,7 @@ export default function PackagePurchasePage() {
         ) : null}
 
         {currentStep === 2 && selectedPackage ? (
-          <div className="grid gap-6 pb-24 md:pb-0 lg:grid-cols-[2fr,1.2fr]">
+          <div className="grid gap-6 pb-32 lg:pb-0 lg:grid-cols-[2fr,1.2fr]">
             <Card>
               <CardHeader>
                 <CardTitle>Paket Özeti</CardTitle>
@@ -703,7 +703,7 @@ export default function PackagePurchasePage() {
               </CardFooter>
             </Card>
 
-            <div className="sticky bottom-0 left-0 right-0 z-30 flex flex-col gap-3 border-t bg-background/95 px-4 py-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:flex-row sm:justify-between sm:border-transparent sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none">
+            <div className="fixed bottom-16 left-0 right-0 z-[60] flex flex-col gap-3 border-t bg-background/95 px-4 py-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:sticky lg:bottom-0 lg:flex-row lg:justify-between lg:px-6">
               <Button variant="ghost" onClick={handleBackToPackages} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Geri dön
@@ -719,7 +719,7 @@ export default function PackagePurchasePage() {
         ) : null}
 
         {currentStep === 3 && selectedPackage ? (
-          <div className="grid gap-6 pb-24 md:pb-0 lg:grid-cols-[1.4fr,1fr]">
+          <div className="grid gap-6 pb-32 lg:pb-0 lg:grid-cols-[1.4fr,1fr]">
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>PayTR Güvenli Ödeme</CardTitle>
@@ -877,7 +877,7 @@ export default function PackagePurchasePage() {
                 </CardFooter>
               </Card>
 
-              <div className="sticky bottom-0 left-0 right-0 z-30 flex flex-col gap-3 border-t bg-background/95 px-4 py-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:flex-row sm:justify-between sm:border-transparent sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none">
+              <div className="fixed bottom-16 left-0 right-0 z-[60] flex flex-col gap-3 border-t bg-background/95 px-4 py-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:sticky lg:bottom-0 lg:flex-row lg:justify-between lg:px-6">
                 <Button variant="ghost" onClick={handleBackToPackages} className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Paketi değiştir

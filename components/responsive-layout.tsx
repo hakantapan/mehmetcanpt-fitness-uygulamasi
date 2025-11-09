@@ -7,6 +7,7 @@ import AdminLayout from "@/components/admin-layout"
 import { TrainerLayout } from "@/components/trainer-layout"
 import { FitnessLayout } from "@/components/fitness-layout"
 import { ThemeProvider } from "next-themes"
+import { Toaster } from "@/components/ui/toaster"
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode
@@ -32,6 +33,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         {userRole === 'CLIENT' && <FitnessLayout>{children}</FitnessLayout>}
         {!userRole && <FitnessLayout>{children}</FitnessLayout>}
       </div>
+      <Toaster />
     </>
   )
 }

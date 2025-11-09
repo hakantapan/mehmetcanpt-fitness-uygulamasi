@@ -4,6 +4,8 @@ import type { Prisma, OrderStatus, PaymentStatus } from '@prisma/client'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 const STATUS_LABELS: Record<string, string> = {
   Aktif: 'Aktif',
   Tamamlandi: 'Tamamlandı',

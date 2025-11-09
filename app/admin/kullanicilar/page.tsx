@@ -18,6 +18,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -100,6 +110,9 @@ export default function UserManagement() {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [isViewUserOpen, setIsViewUserOpen] = useState(false)
   const [isEditUserOpen, setIsEditUserOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserRow | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const [newUser, setNewUser] = useState(INITIAL_NEW_USER)
   const [editUser, setEditUser] = useState(INITIAL_EDIT_USER)
@@ -378,34 +391,46 @@ export default function UserManagement() {
     }
   }
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteClick = (user: UserRow) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return
+
     try {
+      setIsDeleting(true)
       const response = await fetch("/api/admin/users", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: userId }),
+        body: JSON.stringify({ id: userToDelete.id }),
       })
 
       if (!response.ok) {
         const data = await response.json().catch(() => null)
-        throw new Error(data?.error || "Kullanıcı pasif hale getirilemedi")
+        throw new Error(data?.error || "Kullanıcı silinemedi")
       }
 
       toast({
-        title: "Kullanıcı pasif hale getirildi",
-        description: "Kullanıcı listeden kaldırıldı.",
+        title: "Kullanıcı silindi",
+        description: `${userToDelete.name} sistemden kalıcı olarak silindi.`,
       })
 
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
       await fetchUsers()
     } catch (error) {
       console.error("User delete error:", error)
       toast({
         title: "Hata",
-        description: (error as Error).message || "Kullanıcı pasif hale getirilirken bir sorun oluştu.",
+        description: (error as Error).message || "Kullanıcı silinirken bir sorun oluştu.",
         variant: "destructive",
       })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -681,11 +706,11 @@ export default function UserManagement() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => handleDeleteUser(user.id)}
+                                onClick={() => handleDeleteClick(user)}
                                 className="text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Pasif Et
+                                Kullanıcıyı Sil
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -873,6 +898,35 @@ export default function UserManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Kullanıcıyı Sil</AlertDialogTitle>
+              <AlertDialogDescription>
+                {userToDelete && (
+                  <>
+                    <strong>{userToDelete.name}</strong> kullanıcısını kalıcı olarak silmek istediğinizden emin misiniz?
+                    <br />
+                    <br />
+                    Bu işlem geri alınamaz. Kullanıcının tüm verileri (profil, antrenman programları, beslenme programları vb.) silinecektir.
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteUser}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? "Siliniyor..." : "Sil"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   )

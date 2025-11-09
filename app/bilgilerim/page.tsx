@@ -446,30 +446,14 @@ export default function BilgilerimPage() {
               <p className="text-muted-foreground">Kişisel bilgilerini yönet</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={isEditing ? "destructive" : "outline"}
-              onClick={() => {
-                if (isEditing) {
-                  handleSave();
-                } else {
-                  setIsEditing(true);
-                }
-              }}
-              disabled={isSaving}
-            >
-              {isEditing ? <Save className="w-4 h-4 mr-2" /> : <Edit3 className="w-4 h-4 mr-2" />}
-              {isEditing ? "Kaydet" : "Düzenle"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              className="text-red-600 border-red-300 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Çıkış Yap
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            className="text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Çıkış Yap
+          </Button>
         </div>
 
         {/* Subscription Summary */}
@@ -556,7 +540,26 @@ export default function BilgilerimPage() {
 
         {/* Profile Photo & Basic Info */}
         <Card>
-          <CardContent className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg">Profil Bilgileri</CardTitle>
+            <Button
+              size="sm"
+              variant={isEditing ? "default" : "outline"}
+              onClick={() => {
+                if (isEditing) {
+                  handleSave();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              disabled={isSaving}
+              className="h-8 px-3"
+            >
+              {isEditing ? <Save className="w-3 h-3 mr-1" /> : <Edit3 className="w-3 h-3 mr-1" />}
+              {isEditing ? "Kaydet" : "Düzenle"}
+            </Button>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
             <div className="flex flex-col lg:flex-row items-center gap-6">
               <div className="relative">
                 <Image
@@ -602,8 +605,24 @@ export default function BilgilerimPage() {
 
         {/* Personal Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Kişisel Bilgiler</CardTitle>
+            <Button
+              size="sm"
+              variant={isEditing ? "default" : "outline"}
+              onClick={() => {
+                if (isEditing) {
+                  handleSave();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              disabled={isSaving}
+              className="h-8 px-3"
+            >
+              {isEditing ? <Save className="w-3 h-3 mr-1" /> : <Edit3 className="w-3 h-3 mr-1" />}
+              {isEditing ? "Kaydet" : "Düzenle"}
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -666,11 +685,27 @@ export default function BilgilerimPage() {
 
         {/* Physical Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Ruler className="w-5 h-5" />
               Fiziksel Özellikler
             </CardTitle>
+            <Button
+              size="sm"
+              variant={isEditing ? "default" : "outline"}
+              onClick={() => {
+                if (isEditing) {
+                  handleSave();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              disabled={isSaving}
+              className="h-8 px-3"
+            >
+              {isEditing ? <Save className="w-3 h-3 mr-1" /> : <Edit3 className="w-3 h-3 mr-1" />}
+              {isEditing ? "Kaydet" : "Düzenle"}
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -745,11 +780,27 @@ export default function BilgilerimPage() {
 
         {/* Contact Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Phone className="w-5 h-5" />
               İletişim Bilgileri
             </CardTitle>
+            <Button
+              size="sm"
+              variant={isEditing ? "default" : "outline"}
+              onClick={() => {
+                if (isEditing) {
+                  handleSave();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              disabled={isSaving}
+              className="h-8 px-3"
+            >
+              {isEditing ? <Save className="w-3 h-3 mr-1" /> : <Edit3 className="w-3 h-3 mr-1" />}
+              {isEditing ? "Kaydet" : "Düzenle"}
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -811,15 +862,6 @@ export default function BilgilerimPage() {
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        {isEditing && (
-          <div className="flex justify-end">
-            <Button onClick={handleSave} className="px-8" disabled={isSaving}>
-              <Save className="w-4 h-4 mr-2" />
-              Değişiklikleri Kaydet
-            </Button>
-          </div>
-        )}
       </div>
     </ResponsiveLayout>
   )

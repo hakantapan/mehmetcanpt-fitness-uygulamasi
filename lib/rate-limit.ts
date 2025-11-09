@@ -8,11 +8,11 @@ const store: RateLimitStore = new Map()
 // Store'u temizle (her 5 dakikada bir eski kayıtları sil)
 const cleanupInterval = setInterval(() => {
   const now = Date.now()
-  for (const [key, value] of store.entries()) {
+  store.forEach((value, key) => {
     if (value.resetTime < now) {
       store.delete(key)
     }
-  }
+  })
 }, 5 * 60 * 1000)
 
 // Cleanup interval'i process sonlandığında temizle
@@ -75,6 +75,13 @@ export function checkRateLimit(
     remaining: options.maxRequests - record.count,
     resetTime: record.resetTime,
   }
+}
+
+/**
+ * Rate limit sayacını sıfırla (başarılı işlemler için)
+ */
+export function resetRateLimit(identifier: string): void {
+  store.delete(identifier)
 }
 
 /**
@@ -149,4 +156,3 @@ export function withRateLimit(
     return response
   }
 }
-

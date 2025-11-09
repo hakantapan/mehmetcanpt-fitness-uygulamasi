@@ -4,6 +4,8 @@ import { startOfMonth, endOfMonth, subMonths, startOfDay, addDays } from 'date-f
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 const STATUS_LABELS: Record<string, string> = {
   Aktif: 'Aktif',
   Tamamlandi: 'Tamamlandı',

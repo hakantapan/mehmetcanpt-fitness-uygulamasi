@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import ResponsiveLayout from "@/components/responsive-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,9 +23,11 @@ import {
   ImageIcon,
   Tag,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
+import { useToast } from "@/hooks/use-toast"
 
 type SupportQuestion = {
   id: string
@@ -173,6 +175,21 @@ const mapCategoryValue = (value: string) => {
   }
 }
 
+const getCategoryBadgeColor = (category: string) => {
+  switch (category) {
+    case "Antrenman":
+      return "bg-[#DC1D24] text-white" // Kırmızı
+    case "Beslenme":
+      return "bg-green-600 text-white" // Yeşil
+    case "Supplement":
+      return "bg-orange-600 text-white" // Turuncu
+    case "Teknik Destek":
+      return "bg-blue-600 text-white" // Mavi
+    default:
+      return "bg-gray-600 text-white" // Gri
+  }
+}
+
 export default function SoruMerkeziPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -188,6 +205,9 @@ export default function SoruMerkeziPage() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(null)
+  const { toast } = useToast()
+  const previousQuestionsRef = useRef<Map<string, boolean>>(new Map())
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const filteredFAQ = useMemo(() => {
     return faqCategories.flatMap((category) =>
@@ -231,9 +251,11 @@ export default function SoruMerkeziPage() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
-  const fetchQuestions = useCallback(async () => {
+  const fetchQuestions = useCallback(async (showNotifications = true, isInitialLoad = false) => {
     try {
-      setLoading(true)
+      if (isInitialLoad) {
+        setLoading(true)
+      }
       setError(null)
       const response = await fetch("/api/client/questions")
       if (!response.ok) {
@@ -241,17 +263,56 @@ export default function SoruMerkeziPage() {
       }
 
       const data = await response.json()
-      setQuestions(Array.isArray(data.questions) ? data.questions : [])
+      const newQuestions = Array.isArray(data.questions) ? data.questions : []
+      
+      // Yeni yanıtları kontrol et
+      if (showNotifications && previousQuestionsRef.current.size > 0) {
+        newQuestions.forEach((question: SupportQuestion) => {
+          const previousHadAnswer = previousQuestionsRef.current.get(question.id) ?? false
+          const nowHasAnswer = !!question.answer
+          
+          // Eğer önceki durumda yanıt yoktu ama şimdi varsa, bildirim göster
+          if (!previousHadAnswer && nowHasAnswer) {
+            toast({
+              title: "Yanıtlandı!",
+              description: `"${question.subject}" sorunuza yanıt geldi.`,
+              variant: "default",
+            })
+          }
+        })
+      }
+      
+      // Mevcut durumu kaydet
+      const answeredMap = new Map<string, boolean>()
+      newQuestions.forEach((question: SupportQuestion) => {
+        answeredMap.set(question.id, !!question.answer)
+      })
+      previousQuestionsRef.current = answeredMap
+      
+      setQuestions(newQuestions)
     } catch (err) {
       console.error("Client questions fetch error:", err)
       setError((err as Error).message || "Sorular alınamadı")
     } finally {
-      setLoading(false)
+      if (isInitialLoad) {
+        setLoading(false)
+      }
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
-    void fetchQuestions()
+    void fetchQuestions(false, true) // İlk yüklemede bildirim gösterme
+    
+    // Her 30 saniyede bir kontrol et
+    pollingIntervalRef.current = setInterval(() => {
+      void fetchQuestions(true, false)
+    }, 30000)
+    
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+      }
+    }
   }, [fetchQuestions])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -313,7 +374,7 @@ export default function SoruMerkeziPage() {
         priority: "orta",
         files: [],
       })
-      await fetchQuestions()
+      await fetchQuestions(false, false)
     } catch (err) {
       console.error("Client question create error:", err)
       setSubmissionMessage((err as Error).message || "Destek talebi gönderilemedi.")
@@ -327,6 +388,11 @@ export default function SoruMerkeziPage() {
     return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: tr })
   }
 
+  // Yanıtlanmış soru sayısını hesapla
+  const answeredCount = useMemo(() => {
+    return questions.filter((q) => q.answer && q.status === "Cevaplanmis").length
+  }, [questions])
+
   return (
     <ResponsiveLayout>
       <div className="space-y-6">
@@ -338,7 +404,14 @@ export default function SoruMerkeziPage() {
         <Tabs defaultValue="faq" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="faq">Sık Sorulan Sorular</TabsTrigger>
-            <TabsTrigger value="tickets">Destek Taleplerim</TabsTrigger>
+            <TabsTrigger value="tickets" className="relative">
+              Destek Taleplerim
+              {answeredCount > 0 && (
+                <Badge className="ml-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {answeredCount}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="contact">İletişim</TabsTrigger>
           </TabsList>
 
@@ -393,7 +466,7 @@ export default function SoruMerkeziPage() {
                         <AccordionTrigger className="text-left">
                           <div>
                             <div className="font-medium">{item.question}</div>
-                            <Badge variant="secondary" className="mt-1">
+                            <Badge className={`mt-1 ${getCategoryBadgeColor(item.category)}`}>
                               {item.category}
                             </Badge>
                           </div>
@@ -544,9 +617,17 @@ export default function SoruMerkeziPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
-                  Taleplerim
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    Taleplerim
+                  </div>
+                  {answeredCount > 0 && (
+                    <Badge className="bg-green-500 text-white flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {answeredCount} Yanıtlandı
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

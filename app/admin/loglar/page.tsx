@@ -13,9 +13,19 @@ import {
   CheckCircle,
   ShieldAlert,
   ShieldCheck,
+  Mail,
 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict"
 import { tr } from "date-fns/locale/tr"
+import DOMPurify from "dompurify"
 
 type LogLevel = "INFO" | "WARN" | "ERROR" | "AUDIT"
 type LogSource = "auth" | "support" | "trainer" | "scheduler" | "mail" | "subscription"
@@ -65,6 +75,8 @@ export default function AdminLogsPage() {
   const [error, setError] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [selectedMailContent, setSelectedMailContent] = useState<{ html?: string; text?: string; subject?: string } | null>(null)
+  const [mailDialogOpen, setMailDialogOpen] = useState(false)
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 400)
@@ -244,9 +256,93 @@ export default function AdminLogsPage() {
                         ) : null}
                       </div>
                       {log.context ? (
-                        <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs text-muted-foreground">
-                          {JSON.stringify(log.context, null, 2)}
-                        </pre>
+                        <div className="space-y-2">
+                          {/* Mail logları için özel gösterim */}
+                          {log.source === "mail" && typeof log.context === "object" && log.context !== null ? (
+                            <div className="rounded-md bg-muted p-3 text-xs">
+                              {"type" in log.context && (
+                                <div className="mb-2">
+                                  <span className="font-medium text-foreground">Tip:</span> {String(log.context.type)}
+                                </div>
+                              )}
+                              {"recipients" in log.context && Array.isArray(log.context.recipients) && (
+                                <div className="mb-2">
+                                  <span className="font-medium text-foreground">Alıcılar:</span>{" "}
+                                  {log.context.recipients.join(", ")}
+                                </div>
+                              )}
+                              {"subject" in log.context && (
+                                <div className="mb-2">
+                                  <span className="font-medium text-foreground">Konu:</span> {String(log.context.subject)}
+                                </div>
+                              )}
+                              {"delivery" in log.context &&
+                                typeof log.context.delivery === "object" &&
+                                log.context.delivery !== null && (
+                                  <div className="mt-2 space-y-1 border-t pt-2">
+                                    <div className="font-medium text-foreground">Teslimat Bilgileri:</div>
+                                    {"messageId" in log.context.delivery && log.context.delivery.messageId && (
+                                      <div>
+                                        <span className="text-muted-foreground">Message ID:</span>{" "}
+                                        <code className="rounded bg-background px-1 py-0.5 text-xs">
+                                          {String(log.context.delivery.messageId)}
+                                        </code>
+                                      </div>
+                                    )}
+                                    {"accepted" in log.context.delivery &&
+                                      Array.isArray(log.context.delivery.accepted) &&
+                                      log.context.delivery.accepted.length > 0 && (
+                                        <div>
+                                          <span className="text-green-600">✓ Kabul edilen:</span>{" "}
+                                          {log.context.delivery.accepted.join(", ")}
+                                        </div>
+                                      )}
+                                    {"rejected" in log.context.delivery &&
+                                      Array.isArray(log.context.delivery.rejected) &&
+                                      log.context.delivery.rejected.length > 0 && (
+                                        <div>
+                                          <span className="text-red-600">✗ Reddedilen:</span>{" "}
+                                          {log.context.delivery.rejected.join(", ")}
+                                        </div>
+                                      )}
+                                  </div>
+                                )}
+                              {"error" in log.context && typeof log.context.error === "object" && (
+                                <div className="mt-2 border-t pt-2">
+                                  <div className="font-medium text-red-600">Hata:</div>
+                                  {"message" in log.context.error && (
+                                    <div className="text-red-600">{String(log.context.error.message)}</div>
+                                  )}
+                                </div>
+                              )}
+                              {/* Mail içeriği butonu */}
+                              {("html" in log.context || "text" in log.context) && (
+                                <div className="mt-3 border-t pt-3">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => {
+                                      setSelectedMailContent({
+                                        html: "html" in log.context ? String(log.context.html) : undefined,
+                                        text: "text" in log.context ? String(log.context.text) : undefined,
+                                        subject: "subject" in log.context ? String(log.context.subject) : undefined,
+                                      })
+                                      setMailDialogOpen(true)
+                                    }}
+                                  >
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    Mail İçeriğini Görüntüle
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs text-muted-foreground">
+                              {JSON.stringify(log.context, null, 2)}
+                            </pre>
+                          )}
+                        </div>
                       ) : null}
                     </div>
                   )
@@ -263,6 +359,43 @@ export default function AdminLogsPage() {
             ) : null}
           </CardContent>
         </Card>
+
+        {/* Mail içeriği dialog */}
+        <Dialog open={mailDialogOpen} onOpenChange={setMailDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedMailContent?.subject || "Mail İçeriği"}
+              </DialogTitle>
+              <DialogDescription>Gönderilen mail içeriği</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {selectedMailContent?.html ? (
+                <div>
+                  <div className="mb-2 text-sm font-medium">HTML İçerik:</div>
+                  <div
+                    className="rounded-md border bg-background p-4"
+                    dangerouslySetInnerHTML={{ 
+                      __html: DOMPurify.sanitize(selectedMailContent.html, {
+                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+                        ALLOWED_ATTR: ['href', 'target', 'rel'],
+                        ALLOW_DATA_ATTR: false
+                      })
+                    }}
+                  />
+                </div>
+              ) : null}
+              {selectedMailContent?.text ? (
+                <div>
+                  <div className="mb-2 text-sm font-medium">Metin İçerik:</div>
+                  <pre className="whitespace-pre-wrap rounded-md border bg-muted p-4 text-xs">
+                    {selectedMailContent.text}
+                  </pre>
+                </div>
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   )
